@@ -1,0 +1,440 @@
+:root {
+  color: #17201a;
+  background: #f6f7f3;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button {
+  min-height: 44px;
+  border: 0;
+  border-radius: 8px;
+  background: #166534;
+  color: #fff;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #14532d;
+}
+
+input,
+select,
+textarea {
+  width: 100%;
+  border: 1px solid #d5dbcf;
+  border-radius: 8px;
+  padding: 0.82rem 0.9rem;
+  background: #fff;
+  color: #17201a;
+}
+
+textarea {
+  min-height: 92px;
+  resize: vertical;
+}
+
+label {
+  display: grid;
+  gap: 0.42rem;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #3f4f44;
+}
+
+a {
+  color: #166534;
+  font-weight: 750;
+}
+
+.loading {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  color: #405146;
+}
+
+.auth-screen {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background:
+    linear-gradient(120deg, rgba(22, 101, 52, 0.16), rgba(14, 116, 144, 0.14)),
+    #f6f7f3;
+}
+
+.auth-panel {
+  width: min(440px, 100%);
+  border: 1px solid #dfe5d8;
+  border-radius: 8px;
+  background: #fff;
+  padding: 1.25rem;
+  box-shadow: 0 18px 55px rgba(20, 41, 31, 0.12);
+}
+
+.auth-panel h1 {
+  margin: 1rem 0;
+  font-size: 2rem;
+}
+
+.auth-panel form,
+.grid-form {
+  display: grid;
+  gap: 1rem;
+}
+
+.auth-brand,
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.auth-brand strong,
+.brand strong {
+  font-size: 1.2rem;
+}
+
+.app-shell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 260px 1fr;
+}
+
+.sidebar {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 1.25rem;
+  border-right: 1px solid #dfe5d8;
+  background: #fff;
+}
+
+.brand span {
+  display: block;
+  color: #647066;
+  font-size: 0.82rem;
+}
+
+nav {
+  display: grid;
+  gap: 0.35rem;
+}
+
+nav a {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-height: 44px;
+  border-radius: 8px;
+  padding: 0 0.75rem;
+  color: #33433a;
+  text-decoration: none;
+}
+
+nav a:hover {
+  background: #edf4eb;
+}
+
+main {
+  width: min(1180px, 100%);
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.page-header span {
+  color: #0e7490;
+  font-size: 0.8rem;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.page-header h1 {
+  margin: 0.2rem 0 0;
+  font-size: 2rem;
+}
+
+.stat-grid,
+.habit-grid,
+.routine-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.stat-card,
+.panel,
+.habit-card,
+.routine-card {
+  border: 1px solid #dfe5d8;
+  border-radius: 8px;
+  background: #fff;
+  padding: 1rem;
+}
+
+.stat-card {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.stat-card span,
+.stat-card small,
+.row-item span,
+.routine-card span {
+  color: #647066;
+}
+
+.stat-card strong {
+  font-size: 2rem;
+}
+
+.panel {
+  margin-bottom: 1rem;
+}
+
+.panel h2,
+.habit-card h2,
+.routine-card h2 {
+  margin: 0 0 1rem;
+  font-size: 1.1rem;
+}
+
+.chart-frame {
+  height: 280px;
+}
+
+.list {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.row-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  border: 1px solid #edf0e9;
+  border-radius: 8px;
+  padding: 0.8rem;
+}
+
+.row-item div {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.grid-form {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.full {
+  grid-column: 1 / -1;
+}
+
+.exercise-builder {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.exercise-row,
+.routine-row {
+  display: grid;
+  grid-template-columns: 2fr 0.7fr 0.7fr 0.8fr;
+  gap: 0.5rem;
+}
+
+.routine-row {
+  grid-template-columns: 2fr 0.7fr 0.7fr;
+}
+
+.secondary-button,
+.ghost-button,
+.icon-button {
+  background: #edf4eb;
+  color: #166534;
+}
+
+.secondary-button {
+  width: fit-content;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0 0.85rem;
+}
+
+.ghost-button {
+  margin-top: auto;
+}
+
+.icon-button {
+  width: 42px;
+  min-height: 42px;
+  display: grid;
+  place-items: center;
+}
+
+.secondary-button:hover,
+.ghost-button:hover,
+.icon-button:hover {
+  background: #dbead7;
+}
+
+.habit-grid,
+.routine-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.habit-card,
+.routine-card {
+  min-height: 178px;
+}
+
+.habit-top,
+.routine-card > div {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.check-button {
+  width: 44px;
+  background: #edf4eb;
+  color: #166534;
+}
+
+.check-button.complete {
+  background: #166534;
+  color: white;
+}
+
+.habit-card p {
+  margin: 0.2rem 0;
+  font-size: 1.4rem;
+  font-weight: 850;
+}
+
+.habit-card small {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.8rem;
+  color: #0e7490;
+}
+
+.routine-card ul {
+  margin: 0;
+  padding-left: 1.1rem;
+  color: #3f4f44;
+}
+
+.check-label {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.check-label input {
+  width: 18px;
+}
+
+.narrow-panel {
+  max-width: 720px;
+}
+
+.error {
+  margin: 0;
+  color: #b91c1c;
+}
+
+.success {
+  margin: 0;
+  color: #166534;
+  font-weight: 800;
+}
+
+.empty {
+  color: #647066;
+}
+
+@media (max-width: 860px) {
+  .app-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    position: static;
+    height: auto;
+    border-right: 0;
+    border-bottom: 1px solid #dfe5d8;
+  }
+
+  nav {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    overflow-x: auto;
+  }
+
+  nav a {
+    justify-content: center;
+    font-size: 0;
+  }
+
+  .stat-grid,
+  .habit-grid,
+  .routine-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 620px) {
+  main {
+    padding: 1rem;
+  }
+
+  .grid-form,
+  .stat-grid,
+  .habit-grid,
+  .routine-grid,
+  .exercise-row,
+  .routine-row {
+    grid-template-columns: 1fr;
+  }
+
+  .page-header {
+    align-items: start;
+    flex-direction: column;
+  }
+
+  .page-header h1 {
+    font-size: 1.6rem;
+  }
+}
