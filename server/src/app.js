@@ -10,13 +10,37 @@ import routineRoutes from './routes/routineRoutes.js';
 import workoutRoutes from './routes/workoutRoutes.js';
 import { errorHandler, notFound } from './middleware/errorHandler.js';
 
+function buildAllowedOrigins() {
+  const configuredOrigins = process.env.CLIENT_URL?.split(',').map((origin) => origin.trim()).filter(Boolean) || [];
+
+  if (process.env.NODE_ENV !== 'production') {
+    configuredOrigins.push(
+      'http://localhost:5173',
+      'http://localhost:5174',
+      'http://localhost:5175',
+      'http://localhost:5176',
+      'http://localhost:5177'
+    );
+  }
+
+  return [...new Set(configuredOrigins)];
+}
+
 export function createApp() {
   const app = express();
+  const allowedOrigins = buildAllowedOrigins();
 
   app.use(helmet());
   app.use(
     cors({
-      origin: process.env.CLIENT_URL?.split(',') || 'http://localhost:5173',
+      origin(origin, callback) {
+        if (!origin || allowedOrigins.includes(origin)) {
+          callback(null, true);
+          return;
+        }
+
+        callback(new Error(`CORS blocked origin: ${origin}`));
+      },
       credentials: true
     })
   );
