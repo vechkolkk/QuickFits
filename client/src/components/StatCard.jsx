@@ -1,3 +1,5 @@
+import React from 'react';
+
 export function StatCard({ label, value, hint }) {
   return (
     <section className="stat-card">

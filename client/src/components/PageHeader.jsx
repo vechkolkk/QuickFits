@@ -1,3 +1,5 @@
+import React from 'react';
+
 export function PageHeader({ title, eyebrow, children }) {
   return (
     <header className="page-header">

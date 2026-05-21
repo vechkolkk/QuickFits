@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Activity } from 'lucide-react';
 import { getErrorMessage } from '../api/client.js';
 import { useAuth } from '../state/AuthContext.jsx';
