@@ -56,3 +56,5 @@ docs/     Deployment guide
 ## Deployment
 
 See [docs/AWS_DEPLOYMENT.md](docs/AWS_DEPLOYMENT.md) for step-by-step AWS deployment instructions.
+
+For EC2 dev-port troubleshooting, see [docs/EC2_TROUBLESHOOTING.md](docs/EC2_TROUBLESHOOTING.md).
