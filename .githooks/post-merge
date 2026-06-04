@@ -1,0 +1,5 @@
+#!/bin/sh
+set -e
+
+echo "Installing QuickFits dependencies after pull..."
+npm install
