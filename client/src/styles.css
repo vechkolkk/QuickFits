@@ -35,6 +35,11 @@ button:hover {
   background: #14532d;
 }
 
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
 input,
 select,
 textarea {
@@ -229,6 +234,24 @@ main {
   font-size: 1.1rem;
 }
 
+.section-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.section-title-row h2 {
+  margin: 0;
+}
+
+.muted-label {
+  color: #647066;
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
 .chart-frame {
   height: 280px;
 }
@@ -266,11 +289,22 @@ main {
   gap: 0.65rem;
 }
 
+.exercise-header {
+  display: grid;
+  grid-template-columns: 2fr 0.7fr 0.7fr 0.8fr 0.8fr 48px;
+  gap: 0.5rem;
+  color: #647066;
+  font-size: 0.75rem;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
 .exercise-row,
 .routine-row {
   display: grid;
-  grid-template-columns: 2fr 0.7fr 0.7fr 0.8fr;
+  grid-template-columns: 2fr 0.7fr 0.7fr 0.8fr 0.8fr 48px;
   gap: 0.5rem;
+  align-items: center;
 }
 
 .routine-row {
@@ -279,6 +313,7 @@ main {
 
 .secondary-button,
 .ghost-button,
+.ghost-inline-button,
 .icon-button {
   background: #edf4eb;
   color: #166534;
@@ -296,6 +331,12 @@ main {
   margin-top: auto;
 }
 
+.ghost-inline-button {
+  width: fit-content;
+  min-height: 40px;
+  padding: 0 0.85rem;
+}
+
 .icon-button {
   width: 42px;
   min-height: 42px;
@@ -305,8 +346,76 @@ main {
 
 .secondary-button:hover,
 .ghost-button:hover,
+.ghost-inline-button:hover,
 .icon-button:hover {
   background: #dbead7;
+}
+
+.danger-button {
+  color: #b91c1c;
+  background: #fee2e2;
+}
+
+.danger-button:hover {
+  background: #fecaca;
+}
+
+.workout-history-card {
+  display: grid;
+  gap: 0.8rem;
+  border: 1px solid #edf0e9;
+  border-radius: 8px;
+  padding: 0.95rem;
+  background: #fff;
+}
+
+.workout-history-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: start;
+}
+
+.workout-history-top > div:first-child {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.workout-history-top span {
+  color: #647066;
+}
+
+.history-actions {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.exercise-summary-list {
+  display: grid;
+  gap: 0.45rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.exercise-summary-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  border-radius: 8px;
+  background: #f7faf6;
+  padding: 0.55rem 0.65rem;
+}
+
+.exercise-summary-list span,
+.workout-notes {
+  color: #647066;
+}
+
+.workout-notes {
+  margin: 0;
+  border-left: 3px solid #166534;
+  padding-left: 0.75rem;
 }
 
 .habit-grid,
@@ -424,9 +533,21 @@ main {
   .stat-grid,
   .habit-grid,
   .routine-grid,
+  .exercise-header,
   .exercise-row,
   .routine-row {
     grid-template-columns: 1fr;
+  }
+
+  .exercise-header {
+    display: none;
+  }
+
+  .section-title-row,
+  .workout-history-top,
+  .exercise-summary-list li {
+    align-items: start;
+    flex-direction: column;
   }
 
   .page-header {
