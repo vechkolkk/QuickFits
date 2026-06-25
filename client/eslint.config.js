@@ -26,7 +26,8 @@ export default [
       globals: {
         document: 'readonly',
         localStorage: 'readonly',
-        setTimeout: 'readonly'
+        setTimeout: 'readonly',
+        window: 'readonly'
       }
     },
     rules: {
