@@ -2,7 +2,8 @@ import express from 'express';
 import { z } from 'zod';
 import { requireAuth } from '../middleware/auth.js';
 import { Habit } from '../models/Habit.js';
-import { daysBetween, toDateKey } from '../utils/dates.js';
+import { toDateKey } from '../utils/dates.js';
+import { calculateHabitStreaks, getHabitWeekSummary } from '../utils/streaks.js';
 
 const router = express.Router();
 
@@ -13,30 +14,35 @@ const habitSchema = z.object({
   notificationsEnabled: z.boolean().optional()
 });
 
-function calculateStreak(completedDates) {
-  const dates = [...new Set(completedDates)].sort();
-  if (dates.length === 0) {
-    return { currentStreak: 0, longestStreak: 0 };
+function serializeHabit(habit) {
+  const habitObject = typeof habit.toObject === 'function' ? habit.toObject() : habit;
+  const streaks = calculateHabitStreaks(habitObject.completedDates);
+
+  return {
+    ...habitObject,
+    completedDates: streaks.completedDates,
+    currentStreak: streaks.currentStreak,
+    longestStreak: streaks.longestStreak,
+    weekSummary: getHabitWeekSummary(streaks.completedDates)
+  };
+}
+
+async function refreshStreaksIfNeeded(habit) {
+  const streaks = calculateHabitStreaks(habit.completedDates);
+  const needsUpdate =
+    habit.currentStreak !== streaks.currentStreak ||
+    habit.longestStreak !== streaks.longestStreak ||
+    habit.completedDates.length !== streaks.completedDates.length ||
+    habit.completedDates.some((date, index) => date !== streaks.completedDates[index]);
+
+  if (needsUpdate) {
+    habit.completedDates = streaks.completedDates;
+    habit.currentStreak = streaks.currentStreak;
+    habit.longestStreak = streaks.longestStreak;
+    await habit.save();
   }
 
-  let longestStreak = 1;
-  let streak = 1;
-
-  for (let i = 1; i < dates.length; i += 1) {
-    if (daysBetween(dates[i - 1], dates[i]) === 1) {
-      streak += 1;
-    } else {
-      streak = 1;
-    }
-    longestStreak = Math.max(longestStreak, streak);
-  }
-
-  const today = toDateKey();
-  const yesterday = toDateKey(Date.now() - 86400000);
-  const latest = dates[dates.length - 1];
-  const currentStreak = latest === today || latest === yesterday ? streak : 0;
-
-  return { currentStreak, longestStreak };
+  return habit;
 }
 
 router.use(requireAuth);
@@ -44,7 +50,8 @@ router.use(requireAuth);
 router.get('/', async (req, res, next) => {
   try {
     const habits = await Habit.find({ userId: req.user._id }).sort({ createdAt: -1 });
-    res.json({ habits });
+    const refreshedHabits = await Promise.all(habits.map((habit) => refreshStreaksIfNeeded(habit)));
+    res.json({ habits: refreshedHabits.map((habit) => serializeHabit(habit)) });
   } catch (error) {
     next(error);
   }
@@ -91,12 +98,13 @@ router.post('/:id/checkin', async (req, res, next) => {
       ? habit.completedDates.filter((date) => date !== dateKey)
       : [...habit.completedDates, dateKey];
 
-    const streaks = calculateStreak(habit.completedDates);
+    const streaks = calculateHabitStreaks(habit.completedDates);
+    habit.completedDates = streaks.completedDates;
     habit.currentStreak = streaks.currentStreak;
     habit.longestStreak = streaks.longestStreak;
     await habit.save();
 
-    res.json({ habit });
+    res.json({ habit: serializeHabit(habit) });
   } catch (error) {
     next(error);
   }
