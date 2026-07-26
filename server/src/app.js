@@ -15,6 +15,8 @@ function buildAllowedOrigins() {
 
   if (process.env.NODE_ENV !== 'production') {
     configuredOrigins.push(
+      'http://localhost:4001',
+      'http://localhost:3672',
       'http://localhost:5173',
       'http://localhost:5174',
       'http://localhost:5175',
