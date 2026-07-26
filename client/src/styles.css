@@ -554,9 +554,16 @@ main {
 }
 
 .habit-card p {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
   margin: 0.2rem 0;
   font-size: 1.4rem;
   font-weight: 850;
+}
+
+.habit-card p svg {
+  color: #b45309;
 }
 
 .habit-card small {
@@ -565,6 +572,43 @@ main {
   gap: 0.35rem;
   margin-top: 0.8rem;
   color: #0e7490;
+}
+
+.habit-week {
+  display: grid;
+  gap: 0.5rem;
+  margin-top: 0.9rem;
+}
+
+.habit-week strong {
+  font-size: 0.86rem;
+  color: #405146;
+}
+
+.habit-week-days {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.35rem;
+}
+
+.habit-week-days span {
+  height: 10px;
+  border-radius: 999px;
+  background: #e4e9df;
+}
+
+.habit-week-days span.complete {
+  background: #166534;
+}
+
+.habit-empty-card {
+  align-content: center;
+  gap: 0.6rem;
+  color: #647066;
+}
+
+.habit-empty-card svg {
+  color: #166534;
 }
 
 .routine-card ul {
