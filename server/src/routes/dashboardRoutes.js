@@ -3,6 +3,7 @@ import { requireAuth } from '../middleware/auth.js';
 import { Habit } from '../models/Habit.js';
 import { Workout } from '../models/Workout.js';
 import { startOfWeek, toDateKey } from '../utils/dates.js';
+import { buildRecentActivity } from '../utils/activity.js';
 
 const router = express.Router();
 
@@ -39,7 +40,7 @@ router.get('/summary', async (req, res, next) => {
         completedToday,
         totalHabits: habits.length,
         mostActiveWeek: mostActiveWeek ? { week: mostActiveWeek[0], count: mostActiveWeek[1] } : null,
-        recentActivity: workouts.slice(0, 5)
+        recentActivity: buildRecentActivity(workouts, habits)
       }
     });
   } catch (error) {
