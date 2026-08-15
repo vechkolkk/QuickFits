@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
-import { Pencil, Plus, Trash2, X } from 'lucide-react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Pencil, Plus, Search, Trash2, X } from 'lucide-react';
 import { api, getErrorMessage } from '../api/client.js';
 import { PageHeader } from '../components/PageHeader.jsx';
+import { filterAndSortWorkouts } from '../utils/workoutFilters.js';
 
 function newExercise() {
   return { exerciseName: '', sets: 3, reps: 10, weight: 0, duration: 0 };
@@ -64,17 +65,26 @@ export function Workouts() {
   const [form, setForm] = useState(initialForm);
   const [editingId, setEditingId] = useState(null);
   const [visibleCount, setVisibleCount] = useState(10);
+  const [filters, setFilters] = useState({ query: '', startDate: '', endDate: '', sort: 'newest' });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
   async function loadWorkouts() {
-    const { data } = await api.get('/workouts');
-    setWorkouts(data.workouts);
+    try {
+      const { data } = await api.get('/workouts');
+      setWorkouts(data.workouts);
+    } catch (err) {
+      setError(getErrorMessage(err));
+    }
   }
 
   useEffect(() => {
     loadWorkouts();
   }, []);
+
+  useEffect(() => {
+    setVisibleCount(10);
+  }, [filters]);
 
   function updateExercise(index, field, value) {
     const exercises = form.exercises.map((exercise, currentIndex) =>
@@ -140,23 +150,39 @@ export function Workouts() {
       }
 
       resetForm();
-      loadWorkouts();
+      await loadWorkouts();
     } catch (err) {
       setError(getErrorMessage(err));
     }
   }
 
   async function deleteWorkout(id) {
-    await api.delete(`/workouts/${id}`);
+    setError('');
+    setSuccess('');
 
-    if (editingId === id) {
-      resetForm();
+    try {
+      await api.delete(`/workouts/${id}`);
+
+      if (editingId === id) {
+        resetForm();
+      }
+
+      await loadWorkouts();
+    } catch (err) {
+      setError(getErrorMessage(err));
     }
-
-    loadWorkouts();
   }
 
-  const visibleWorkouts = workouts.slice(0, visibleCount);
+  const filteredWorkouts = useMemo(() => {
+    return filterAndSortWorkouts(workouts, filters);
+  }, [filters, workouts]);
+
+  const visibleWorkouts = filteredWorkouts.slice(0, visibleCount);
+  const hasActiveFilters = Boolean(filters.query || filters.startDate || filters.endDate);
+
+  function clearFilters() {
+    setFilters({ query: '', startDate: '', endDate: '', sort: 'newest' });
+  }
 
   return (
     <>
@@ -269,12 +295,66 @@ export function Workouts() {
       </section>
       <section className="panel">
         <div className="section-title-row">
-          <h2>History</h2>
-          <span className="muted-label">Showing {visibleWorkouts.length} of {workouts.length}</span>
+          <div>
+            <h2>History</h2>
+            <p>Find workouts by name, exercise, or date.</p>
+          </div>
+          <span className="muted-label">Showing {visibleWorkouts.length} of {filteredWorkouts.length}</span>
+        </div>
+        <div className="workout-filters" role="search" aria-label="Filter workout history">
+          <label className="workout-search">
+            Search
+            <span className="search-input-wrap">
+              <Search size={18} aria-hidden="true" />
+              <input
+                type="search"
+                placeholder="Workout or exercise"
+                value={filters.query}
+                onChange={(event) => setFilters({ ...filters, query: event.target.value })}
+              />
+            </span>
+          </label>
+          <label>
+            From
+            <input
+              type="date"
+              max={filters.endDate || undefined}
+              value={filters.startDate}
+              onChange={(event) => setFilters({ ...filters, startDate: event.target.value })}
+            />
+          </label>
+          <label>
+            To
+            <input
+              type="date"
+              min={filters.startDate || undefined}
+              value={filters.endDate}
+              onChange={(event) => setFilters({ ...filters, endDate: event.target.value })}
+            />
+          </label>
+          <label>
+            Sort
+            <select value={filters.sort} onChange={(event) => setFilters({ ...filters, sort: event.target.value })}>
+              <option value="newest">Newest first</option>
+              <option value="oldest">Oldest first</option>
+            </select>
+          </label>
+          {hasActiveFilters && (
+            <button type="button" className="ghost-inline-button clear-workout-filters" onClick={clearFilters}>
+              <X size={16} /> Clear filters
+            </button>
+          )}
         </div>
         <div className="list">
-          {visibleWorkouts.length === 0 ? (
+          {workouts.length === 0 ? (
             <p className="empty">No workouts logged yet.</p>
+          ) : filteredWorkouts.length === 0 ? (
+            <div className="workout-empty-state">
+              <Search size={24} aria-hidden="true" />
+              <strong>No workouts match your filters</strong>
+              <span>Try a different search term or date range.</span>
+              <button type="button" className="secondary-button" onClick={clearFilters}>Clear filters</button>
+            </div>
           ) : (
             visibleWorkouts.map((workout) => (
               <article className="workout-history-card" key={workout._id}>
@@ -308,7 +388,7 @@ export function Workouts() {
               </article>
             ))
           )}
-          {visibleCount < workouts.length && (
+          {visibleCount < filteredWorkouts.length && (
             <button type="button" className="secondary-button" onClick={() => setVisibleCount(visibleCount + 10)}>
               Show more workouts
             </button>

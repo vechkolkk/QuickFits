@@ -51,7 +51,10 @@ export function createApp() {
   app.use(
     rateLimit({
       windowMs: 15 * 60 * 1000,
-      max: 500
+      max: 500,
+      handler(req, res) {
+        res.status(429).json({ message: 'Too many requests. Please wait a few minutes and try again.' });
+      }
     })
   );
 

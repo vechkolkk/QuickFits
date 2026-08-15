@@ -625,6 +625,66 @@ main {
   background: #fff;
 }
 
+.workout-filters {
+  display: grid;
+  grid-template-columns: minmax(220px, 1.5fr) repeat(3, minmax(140px, 0.75fr));
+  gap: 0.75rem;
+  align-items: end;
+  margin-bottom: 1rem;
+  padding: 0.9rem;
+  border: 1px solid #edf0e9;
+  border-radius: 8px;
+  background: #f7faf6;
+}
+
+.search-input-wrap {
+  position: relative;
+  display: block;
+}
+
+.search-input-wrap svg {
+  position: absolute;
+  top: 50%;
+  left: 0.85rem;
+  transform: translateY(-50%);
+  color: #647066;
+  pointer-events: none;
+}
+
+.search-input-wrap input {
+  padding-left: 2.55rem;
+}
+
+.clear-workout-filters {
+  grid-column: 1 / -1;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.workout-empty-state {
+  display: grid;
+  justify-items: center;
+  gap: 0.4rem;
+  padding: 2.5rem 1rem;
+  border: 1px dashed #cfd8ca;
+  border-radius: 8px;
+  color: #647066;
+  text-align: center;
+}
+
+.workout-empty-state svg {
+  color: #166534;
+}
+
+.workout-empty-state strong {
+  color: #17201a;
+}
+
+.workout-empty-state .secondary-button {
+  margin-top: 0.5rem;
+}
+
 .workout-history-top {
   display: flex;
   justify-content: space-between;
@@ -1118,5 +1178,9 @@ main {
 
   .profile-actions button {
     width: 100%;
+  }
+
+  .workout-filters {
+    grid-template-columns: 1fr;
   }
 }
