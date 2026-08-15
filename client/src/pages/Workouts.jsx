@@ -5,11 +5,12 @@ import { api, getErrorMessage } from '../api/client.js';
 import { PageHeader } from '../components/PageHeader.jsx';
 import { useAuth } from '../state/AuthContext.jsx';
 import { filterAndSortWorkouts } from '../utils/workoutFilters.js';
-import { displayWeightToPounds, getDateKeyInTimeZone, getWeightUnit, poundsToDisplayWeight } from '../utils/preferences.js';
+import { getDateKeyInTimeZone, getWeightUnit } from '../utils/preferences.js';
 import { createWorkoutDraftFromRoutine } from '../utils/workoutDraft.js';
+import { createSet, expandExerciseSets, getExerciseHistory, serializeExerciseSets } from '../utils/workoutSets.js';
 
 function newExercise() {
-  return { exerciseName: '', sets: 3, reps: 10, weight: 0, duration: 0 };
+  return { exerciseName: '', duration: 0, setDetails: [createSet()] };
 }
 
 function initialForm(timezone = 'UTC') {
@@ -30,13 +31,7 @@ function normalizeWorkoutPayload(form, unitSystem) {
     ...form,
     workoutName: form.workoutName.trim(),
     notes: form.notes.trim(),
-    exercises: form.exercises.map((exercise) => ({
-      exerciseName: exercise.exerciseName.trim(),
-      sets: Number(exercise.sets),
-      reps: Number(exercise.reps),
-      weight: displayWeightToPounds(exercise.weight, unitSystem),
-      duration: Number(exercise.duration)
-    }))
+    exercises: form.exercises.map((exercise) => serializeExerciseSets(exercise, unitSystem))
   };
 }
 
@@ -53,12 +48,15 @@ function validateWorkout(form) {
     return 'Every exercise needs a name.';
   }
 
+  const hasMissingSets = form.exercises.some((exercise) => exercise.setDetails.length === 0);
+  if (hasMissingSets) return 'Every exercise needs at least one set.';
+
   const hasInvalidNumber = form.exercises.some((exercise) =>
-    ['sets', 'reps', 'weight', 'duration'].some((field) => Number(exercise[field]) < 0)
+    Number(exercise.duration) < 0 || exercise.setDetails.some((set) => Number(set.reps) < 0 || Number(set.weight) < 0)
   );
 
   if (hasInvalidNumber) {
-    return 'Sets, reps, weight, and duration cannot be negative.';
+    return 'Reps, weight, and duration cannot be negative.';
   }
 
   return '';
@@ -115,6 +113,33 @@ export function Workouts() {
     setForm({ ...form, exercises: [...form.exercises, newExercise()] });
   }
 
+  function updateSet(exerciseIndex, setIndex, field, value) {
+    setForm({
+      ...form,
+      exercises: form.exercises.map((exercise, currentExerciseIndex) => currentExerciseIndex === exerciseIndex
+        ? { ...exercise, setDetails: exercise.setDetails.map((set, currentSetIndex) => currentSetIndex === setIndex ? { ...set, [field]: value } : set) }
+        : exercise)
+    });
+  }
+
+  function addSet(exerciseIndex) {
+    setForm({
+      ...form,
+      exercises: form.exercises.map((exercise, index) => index === exerciseIndex
+        ? { ...exercise, setDetails: [...exercise.setDetails, { ...exercise.setDetails.at(-1) }] }
+        : exercise)
+    });
+  }
+
+  function removeSet(exerciseIndex, setIndex) {
+    setForm({
+      ...form,
+      exercises: form.exercises.map((exercise, index) => index === exerciseIndex
+        ? { ...exercise, setDetails: exercise.setDetails.filter((_, currentSetIndex) => currentSetIndex !== setIndex) }
+        : exercise)
+    });
+  }
+
   function removeExercise(index) {
     if (form.exercises.length === 1) {
       setError('A workout needs at least one exercise.');
@@ -139,11 +164,7 @@ export function Workouts() {
       workoutName: workout.workoutName,
       date: toDateInputValue(workout.date),
       notes: workout.notes || '',
-      exercises: workout.exercises.map((exercise) => ({
-        ...newExercise(),
-        ...exercise,
-        weight: poundsToDisplayWeight(exercise.weight, unitSystem)
-      }))
+      exercises: workout.exercises.map((exercise) => expandExerciseSets(exercise, unitSystem))
     });
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
@@ -249,32 +270,34 @@ export function Workouts() {
             />
           </label>
           <div className="full exercise-builder">
-            <div className="exercise-header">
-              <span>Exercise</span>
-              <span>Sets</span>
-              <span>Reps</span>
-              <span>Weight ({weightUnit})</span>
-              <span>Duration</span>
-              <span>Remove</span>
-            </div>
-            {form.exercises.map((exercise, index) => (
-              <div className="exercise-row" key={index}>
-                <label><span className="mobile-field-label">Exercise</span><input aria-label={`Exercise ${index + 1} name`} placeholder="Bench press" value={exercise.exerciseName} onChange={(event) => updateExercise(index, 'exerciseName', event.target.value)} required /></label>
-                <label><span className="mobile-field-label">Sets</span><input aria-label={`Exercise ${index + 1} sets`} type="number" min="0" placeholder="3" value={exercise.sets} onChange={(event) => updateExercise(index, 'sets', Number(event.target.value))} /></label>
-                <label><span className="mobile-field-label">Reps</span><input aria-label={`Exercise ${index + 1} reps`} type="number" min="0" placeholder="10" value={exercise.reps} onChange={(event) => updateExercise(index, 'reps', Number(event.target.value))} /></label>
-                <label><span className="mobile-field-label">Weight ({weightUnit})</span><input aria-label={`Exercise ${index + 1} weight in ${weightUnit}`} type="number" min="0" step="0.1" placeholder={unitSystem === 'metric' ? '60' : '135'} value={exercise.weight} onChange={(event) => updateExercise(index, 'weight', Number(event.target.value))} /></label>
-                <label><span className="mobile-field-label">Duration (min)</span><input aria-label={`Exercise ${index + 1} duration in minutes`} type="number" min="0" placeholder="0" value={exercise.duration} onChange={(event) => updateExercise(index, 'duration', Number(event.target.value))} /></label>
-                <button
-                  type="button"
-                  className="icon-button danger-button"
-                  onClick={() => removeExercise(index)}
-                  disabled={form.exercises.length === 1}
-                  aria-label={`Remove exercise ${index + 1}`}
-                >
-                  <Trash2 size={17} />
-                </button>
-              </div>
-            ))}
+            {form.exercises.map((exercise, exerciseIndex) => {
+              const exerciseHistory = getExerciseHistory(workouts, exercise.exerciseName, unitSystem);
+              return (
+                <section className="set-exercise-card" key={exerciseIndex}>
+                  <div className="set-exercise-heading">
+                    <label>Exercise<input placeholder="Bench press" value={exercise.exerciseName} onChange={(event) => updateExercise(exerciseIndex, 'exerciseName', event.target.value)} required /></label>
+                    <label>Duration (min)<input type="number" min="0" value={exercise.duration} onChange={(event) => updateExercise(exerciseIndex, 'duration', Number(event.target.value))} /></label>
+                    <button type="button" className="icon-button danger-button" onClick={() => removeExercise(exerciseIndex)} disabled={form.exercises.length === 1} aria-label={`Remove exercise ${exerciseIndex + 1}`}><Trash2 size={17} /></button>
+                  </div>
+                  <div className="set-table-header" aria-hidden="true"><span>Set</span><span>Reps</span><span>Weight ({weightUnit})</span><span>Remove</span></div>
+                  {exercise.setDetails.map((set, setIndex) => (
+                    <div className="set-row" key={setIndex}>
+                      <strong>{setIndex + 1}</strong>
+                      <label><span className="mobile-field-label">Reps</span><input aria-label={`Exercise ${exerciseIndex + 1} set ${setIndex + 1} reps`} type="number" min="0" value={set.reps} onChange={(event) => updateSet(exerciseIndex, setIndex, 'reps', Number(event.target.value))} /></label>
+                      <label><span className="mobile-field-label">Weight ({weightUnit})</span><input aria-label={`Exercise ${exerciseIndex + 1} set ${setIndex + 1} weight in ${weightUnit}`} type="number" min="0" step="0.1" value={set.weight} onChange={(event) => updateSet(exerciseIndex, setIndex, 'weight', Number(event.target.value))} /></label>
+                      <button type="button" className="icon-button danger-button" onClick={() => removeSet(exerciseIndex, setIndex)} disabled={exercise.setDetails.length === 1} aria-label={`Remove set ${setIndex + 1}`}><Trash2 size={16} /></button>
+                    </div>
+                  ))}
+                  <button type="button" className="secondary-button" onClick={() => addSet(exerciseIndex)}><Plus size={16} /> Add set</button>
+                  {exerciseHistory.length > 0 && (
+                    <div className="exercise-history-preview">
+                      <strong>Recent performance</strong>
+                      {exerciseHistory.map((session) => <span key={session.workoutId}>{new Date(session.date).toLocaleDateString()}: {session.sets.map((set) => `${set.weight}${weightUnit} × ${set.reps}`).join(', ')}</span>)}
+                    </div>
+                  )}
+                </section>
+              );
+            })}
             <button type="button" className="secondary-button" onClick={addExercise}>
               <Plus size={16} /> Add exercise
             </button>
@@ -364,16 +387,15 @@ export function Workouts() {
                   </div>
                 </div>
                 <ul className="exercise-summary-list">
-                  {workout.exercises.map((exercise, index) => (
-                    <li key={`${workout._id}-${exercise.exerciseName}-${index}`}>
-                      <strong>{exercise.exerciseName}</strong>
-                      <span>
-                        {exercise.sets} sets x {exercise.reps} reps
-                        {exercise.weight > 0 ? ` @ ${poundsToDisplayWeight(exercise.weight, unitSystem)} ${weightUnit}` : ''}
-                        {exercise.duration > 0 ? ` - ${exercise.duration} min` : ''}
-                      </span>
-                    </li>
-                  ))}
+                  {workout.exercises.map((exercise, index) => {
+                    const sets = expandExerciseSets(exercise, unitSystem).setDetails;
+                    return (
+                      <li key={`${workout._id}-${exercise.exerciseName}-${index}`}>
+                        <strong>{exercise.exerciseName}</strong>
+                        <span>{sets.map((set) => `${set.weight} ${weightUnit} × ${set.reps}`).join(' · ')}{exercise.duration > 0 ? ` · ${exercise.duration} min` : ''}</span>
+                      </li>
+                    );
+                  })}
                 </ul>
                 {workout.notes && <p className="workout-notes">{workout.notes}</p>}
               </article>

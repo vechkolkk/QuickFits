@@ -5,10 +5,11 @@ export function createWorkoutDraftFromRoutine(routine, date) {
     notes: '',
     exercises: routine.exercises.map((exercise) => ({
       exerciseName: exercise.exerciseName,
-      sets: Number(exercise.sets),
-      reps: Number(exercise.reps),
-      weight: 0,
-      duration: 0
+      duration: 0,
+      setDetails: Array.from({ length: Math.max(1, Number(exercise.sets)) }, () => ({
+        reps: Number(exercise.reps),
+        weight: 0
+      }))
     }))
   };
 }
