@@ -15,5 +15,28 @@ api.interceptors.request.use((config) => {
 });
 
 export function getErrorMessage(error) {
-  return error.response?.data?.message || error.response?.data?.errors?.[0] || 'Something went wrong';
+  const data = error.response?.data;
+  const firstValidationError = data?.errors?.[0];
+
+  if (typeof firstValidationError === 'string') {
+    return firstValidationError;
+  }
+
+  if (firstValidationError?.message) {
+    return firstValidationError.message;
+  }
+
+  if (data?.message) {
+    return data.message;
+  }
+
+  if (error.code === 'ECONNABORTED') {
+    return 'The request took too long. Please try again.';
+  }
+
+  if (!error.response) {
+    return 'Unable to reach QuickFit. Check your connection and try again.';
+  }
+
+  return 'Something went wrong. Please try again.';
 }
