@@ -68,8 +68,12 @@ export function Workouts() {
   const [success, setSuccess] = useState('');
 
   async function loadWorkouts() {
-    const { data } = await api.get('/workouts');
-    setWorkouts(data.workouts);
+    try {
+      const { data } = await api.get('/workouts');
+      setWorkouts(data.workouts);
+    } catch (err) {
+      setError(getErrorMessage(err));
+    }
   }
 
   useEffect(() => {
@@ -140,20 +144,27 @@ export function Workouts() {
       }
 
       resetForm();
-      loadWorkouts();
+      await loadWorkouts();
     } catch (err) {
       setError(getErrorMessage(err));
     }
   }
 
   async function deleteWorkout(id) {
-    await api.delete(`/workouts/${id}`);
+    setError('');
+    setSuccess('');
 
-    if (editingId === id) {
-      resetForm();
+    try {
+      await api.delete(`/workouts/${id}`);
+
+      if (editingId === id) {
+        resetForm();
+      }
+
+      await loadWorkouts();
+    } catch (err) {
+      setError(getErrorMessage(err));
     }
-
-    loadWorkouts();
   }
 
   const visibleWorkouts = workouts.slice(0, visibleCount);
