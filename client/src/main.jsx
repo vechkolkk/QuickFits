@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter, Navigate, NavLink, Route, Routes } from 'react-router-dom';
-import { Activity, Dumbbell, Home, ListChecks, Repeat, Settings } from 'lucide-react';
+import { Activity, Dumbbell, Home, ListChecks, Repeat, Scale, Settings } from 'lucide-react';
 import { AuthProvider, useAuth } from './state/AuthContext.jsx';
 import { Dashboard } from './pages/Dashboard.jsx';
 import { Login } from './pages/Login.jsx';
@@ -10,6 +10,7 @@ import { Workouts } from './pages/Workouts.jsx';
 import { Habits } from './pages/Habits.jsx';
 import { Routines } from './pages/Routines.jsx';
 import { Profile } from './pages/Profile.jsx';
+import { Measurements } from './pages/Measurements.jsx';
 import './styles.css';
 
 const navItems = [
@@ -17,6 +18,7 @@ const navItems = [
   { to: '/workouts', label: 'Workouts', icon: Dumbbell },
   { to: '/habits', label: 'Habits', icon: ListChecks },
   { to: '/routines', label: 'Routines', icon: Repeat },
+  { to: '/measurements', label: 'Measurements', icon: Scale },
   { to: '/profile', label: 'Profile', icon: Settings }
 ];
 
@@ -63,6 +65,7 @@ function AppShell() {
           <Route path="/workouts" element={<Workouts />} />
           <Route path="/habits" element={<Habits />} />
           <Route path="/routines" element={<Routines />} />
+          <Route path="/measurements" element={<Measurements />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
