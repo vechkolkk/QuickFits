@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Activity, AlertCircle, ArrowRight, CalendarDays, CheckCircle2, Droplets, Dumbbell, RefreshCw } from 'lucide-react';
+import { Activity, AlertCircle, ArrowRight, Award, CalendarDays, CheckCircle2, Droplets, Dumbbell, Layers3, RefreshCw, TrendingUp } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import {
   Area,
@@ -17,7 +17,7 @@ import { api, getErrorMessage } from '../api/client.js';
 import { PageHeader } from '../components/PageHeader.jsx';
 import { StatCard } from '../components/StatCard.jsx';
 import { useAuth } from '../state/AuthContext.jsx';
-import { getDateKeyInTimeZone } from '../utils/preferences.js';
+import { getDateKeyInTimeZone, getWeightUnit, poundsToDisplayWeight } from '../utils/preferences.js';
 
 const chartDateFormatter = new Intl.DateTimeFormat(undefined, {
   month: 'short',
@@ -92,8 +92,11 @@ function EmptyChart({ title, message }) {
 export function Dashboard() {
   const { user } = useAuth();
   const timezone = user.timezone || 'UTC';
+  const unitSystem = user.unitSystem || 'imperial';
+  const weightUnit = getWeightUnit(unitSystem);
   const [summary, setSummary] = useState(null);
   const [stats, setStats] = useState({ workoutFrequency: [], habitCompletions: [] });
+  const [progress, setProgress] = useState({ totalVolume: 0, totalSets: 0, exercisesTracked: 0, personalRecords: [], volumeByWeek: [] });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -105,14 +108,16 @@ export function Dashboard() {
       setError('');
 
       try {
-        const [summaryRes, statsRes] = await Promise.all([
+        const [summaryRes, statsRes, progressRes] = await Promise.all([
           api.get('/dashboard/summary'),
-          api.get('/dashboard/stats')
+          api.get('/dashboard/stats'),
+          api.get('/dashboard/progress')
         ]);
 
         if (isMounted) {
           setSummary(summaryRes.data.summary);
           setStats(statsRes.data.stats);
+          setProgress(progressRes.data.progress);
         }
       } catch (err) {
         if (isMounted) {
@@ -142,6 +147,11 @@ export function Dashboard() {
   );
   const hasWorkoutData = chartHasData(workoutChartData, 'count');
   const hasHabitData = chartHasData(habitChartData, 'count');
+  const volumeChartData = progress.volumeByWeek.map((item) => ({
+    ...item,
+    label: formatShortDate(item.week),
+    volume: poundsToDisplayWeight(item.volume, unitSystem)
+  }));
   const habitCompletionRate = summary?.totalHabits
     ? Math.round((summary.completedToday / summary.totalHabits) * 100)
     : 0;
@@ -199,6 +209,40 @@ export function Dashboard() {
             <span>training days tracked</span>
           </article>
         </div>
+      </section>
+      <section className="panel">
+        <div className="section-title-row">
+          <div><h2>Strength Progress</h2><p>Lifetime training totals and your strongest exercise records.</p></div>
+        </div>
+        <div className="progress-summary-grid">
+          <article><TrendingUp size={18} /><strong>{poundsToDisplayWeight(progress.totalVolume, unitSystem).toLocaleString()} {weightUnit}</strong><span>Total volume</span></article>
+          <article><Layers3 size={18} /><strong>{progress.totalSets}</strong><span>Sets logged</span></article>
+          <article><Award size={18} /><strong>{progress.exercisesTracked}</strong><span>Exercises tracked</span></article>
+        </div>
+        {progress.personalRecords.length > 0 ? (
+          <div className="progress-layout">
+            <div className="personal-record-list">
+              {progress.personalRecords.map((record) => (
+                <article key={record.exerciseName}>
+                  <div><strong>{record.exerciseName}</strong><span>Estimated 1RM</span></div>
+                  <strong>{poundsToDisplayWeight(record.bestEstimated1RM, unitSystem)} {weightUnit}</strong>
+                  <span>Heaviest: {poundsToDisplayWeight(record.maxWeight, unitSystem)} {weightUnit}</span>
+                </article>
+              ))}
+            </div>
+            <div className="chart-frame progress-chart">
+              <ResponsiveContainer width="100%" height={260}>
+                <BarChart data={volumeChartData} margin={{ top: 8, right: 8, left: -8, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#dfe5d8" />
+                  <XAxis dataKey="label" tickLine={false} axisLine={false} />
+                  <YAxis tickLine={false} axisLine={false} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Bar name={`Volume (${weightUnit})`} dataKey="volume" fill="#0e7490" radius={[6, 6, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        ) : <div className="chart-empty progress-empty"><Award size={28} /><strong>No records yet</strong><span>Log weighted sets to build your progress profile.</span></div>}
       </section>
       <section className="panel">
         <div className="section-title-row">
