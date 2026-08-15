@@ -7,12 +7,23 @@ import { createToken } from '../utils/tokens.js';
 
 const router = express.Router();
 
+const timezoneSchema = z.string().refine((timezone) => {
+  try {
+    new Intl.DateTimeFormat('en', { timeZone: timezone }).format();
+    return true;
+  } catch {
+    return false;
+  }
+}, 'Timezone must be valid');
+
 const registerSchema = z.object({
   username: z.string().min(2, 'Username must be at least 2 characters'),
   email: z.string().email('Email must be valid'),
   password: z.string().min(8, 'Password must be at least 8 characters'),
   goal: z.string().optional(),
-  experienceLevel: z.enum(['Beginner', 'Casual', 'Intermediate']).optional()
+  experienceLevel: z.enum(['Beginner', 'Casual', 'Intermediate']).optional(),
+  timezone: timezoneSchema.optional(),
+  unitSystem: z.enum(['imperial', 'metric']).optional()
 });
 
 const loginSchema = z.object({
@@ -23,7 +34,9 @@ const loginSchema = z.object({
 const profileSchema = z.object({
   username: z.string().min(2).optional(),
   goal: z.string().optional(),
-  experienceLevel: z.enum(['Beginner', 'Casual', 'Intermediate']).optional()
+  experienceLevel: z.enum(['Beginner', 'Casual', 'Intermediate']).optional(),
+  timezone: timezoneSchema.optional(),
+  unitSystem: z.enum(['imperial', 'metric']).optional()
 });
 
 function serializeUser(user) {
@@ -32,7 +45,9 @@ function serializeUser(user) {
     username: user.username,
     email: user.email,
     goal: user.goal,
-    experienceLevel: user.experienceLevel
+    experienceLevel: user.experienceLevel,
+    timezone: user.timezone,
+    unitSystem: user.unitSystem
   };
 }
 

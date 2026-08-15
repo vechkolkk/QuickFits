@@ -6,7 +6,9 @@ const userSchema = new mongoose.Schema(
     email: { type: String, required: true, unique: true, lowercase: true, trim: true },
     passwordHash: { type: String, required: true },
     goal: { type: String, default: 'Build consistency' },
-    experienceLevel: { type: String, enum: ['Beginner', 'Casual', 'Intermediate'], default: 'Beginner' }
+    experienceLevel: { type: String, enum: ['Beginner', 'Casual', 'Intermediate'], default: 'Beginner' },
+    timezone: { type: String, default: 'UTC' },
+    unitSystem: { type: String, enum: ['imperial', 'metric'], default: 'imperial' }
   },
   { timestamps: true }
 );

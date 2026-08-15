@@ -2,16 +2,18 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Pencil, Plus, Search, Trash2, X } from 'lucide-react';
 import { api, getErrorMessage } from '../api/client.js';
 import { PageHeader } from '../components/PageHeader.jsx';
+import { useAuth } from '../state/AuthContext.jsx';
 import { filterAndSortWorkouts } from '../utils/workoutFilters.js';
+import { displayWeightToPounds, getDateKeyInTimeZone, getWeightUnit, poundsToDisplayWeight } from '../utils/preferences.js';
 
 function newExercise() {
   return { exerciseName: '', sets: 3, reps: 10, weight: 0, duration: 0 };
 }
 
-function initialForm() {
+function initialForm(timezone = 'UTC') {
   return {
     workoutName: '',
-    date: new Date().toISOString().slice(0, 10),
+    date: getDateKeyInTimeZone(new Date(), timezone),
     exercises: [newExercise()],
     notes: ''
   };
@@ -21,7 +23,7 @@ function toDateInputValue(date) {
   return new Date(date).toISOString().slice(0, 10);
 }
 
-function normalizeWorkoutPayload(form) {
+function normalizeWorkoutPayload(form, unitSystem) {
   return {
     ...form,
     workoutName: form.workoutName.trim(),
@@ -30,7 +32,7 @@ function normalizeWorkoutPayload(form) {
       exerciseName: exercise.exerciseName.trim(),
       sets: Number(exercise.sets),
       reps: Number(exercise.reps),
-      weight: Number(exercise.weight),
+      weight: displayWeightToPounds(exercise.weight, unitSystem),
       duration: Number(exercise.duration)
     }))
   };
@@ -61,8 +63,11 @@ function validateWorkout(form) {
 }
 
 export function Workouts() {
+  const { user } = useAuth();
+  const unitSystem = user.unitSystem || 'imperial';
+  const weightUnit = getWeightUnit(unitSystem);
   const [workouts, setWorkouts] = useState([]);
-  const [form, setForm] = useState(initialForm);
+  const [form, setForm] = useState(() => initialForm(user.timezone || 'UTC'));
   const [editingId, setEditingId] = useState(null);
   const [visibleCount, setVisibleCount] = useState(10);
   const [filters, setFilters] = useState({ query: '', startDate: '', endDate: '', sort: 'newest' });
@@ -108,7 +113,7 @@ export function Workouts() {
   }
 
   function resetForm() {
-    setForm(initialForm());
+    setForm(initialForm(user.timezone || 'UTC'));
     setEditingId(null);
     setError('');
   }
@@ -121,7 +126,11 @@ export function Workouts() {
       workoutName: workout.workoutName,
       date: toDateInputValue(workout.date),
       notes: workout.notes || '',
-      exercises: workout.exercises.map((exercise) => ({ ...newExercise(), ...exercise }))
+      exercises: workout.exercises.map((exercise) => ({
+        ...newExercise(),
+        ...exercise,
+        weight: poundsToDisplayWeight(exercise.weight, unitSystem)
+      }))
     });
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
@@ -138,7 +147,7 @@ export function Workouts() {
       return;
     }
 
-    const payload = normalizeWorkoutPayload(form);
+    const payload = normalizeWorkoutPayload(form, unitSystem);
 
     try {
       if (editingId) {
@@ -157,6 +166,9 @@ export function Workouts() {
   }
 
   async function deleteWorkout(id) {
+    const workout = workouts.find((item) => item._id === id);
+    if (!window.confirm(`Delete “${workout?.workoutName || 'this workout'}”?`)) return;
+
     setError('');
     setSuccess('');
 
@@ -228,51 +240,17 @@ export function Workouts() {
               <span>Exercise</span>
               <span>Sets</span>
               <span>Reps</span>
-              <span>Weight</span>
+              <span>Weight ({weightUnit})</span>
               <span>Duration</span>
               <span>Remove</span>
             </div>
             {form.exercises.map((exercise, index) => (
               <div className="exercise-row" key={index}>
-                <input
-                  aria-label={`Exercise ${index + 1} name`}
-                  placeholder="Bench press"
-                  value={exercise.exerciseName}
-                  onChange={(event) => updateExercise(index, 'exerciseName', event.target.value)}
-                  required
-                />
-                <input
-                  aria-label={`Exercise ${index + 1} sets`}
-                  type="number"
-                  min="0"
-                  placeholder="3"
-                  value={exercise.sets}
-                  onChange={(event) => updateExercise(index, 'sets', Number(event.target.value))}
-                />
-                <input
-                  aria-label={`Exercise ${index + 1} reps`}
-                  type="number"
-                  min="0"
-                  placeholder="10"
-                  value={exercise.reps}
-                  onChange={(event) => updateExercise(index, 'reps', Number(event.target.value))}
-                />
-                <input
-                  aria-label={`Exercise ${index + 1} weight`}
-                  type="number"
-                  min="0"
-                  placeholder="135"
-                  value={exercise.weight}
-                  onChange={(event) => updateExercise(index, 'weight', Number(event.target.value))}
-                />
-                <input
-                  aria-label={`Exercise ${index + 1} duration`}
-                  type="number"
-                  min="0"
-                  placeholder="0"
-                  value={exercise.duration}
-                  onChange={(event) => updateExercise(index, 'duration', Number(event.target.value))}
-                />
+                <label><span className="mobile-field-label">Exercise</span><input aria-label={`Exercise ${index + 1} name`} placeholder="Bench press" value={exercise.exerciseName} onChange={(event) => updateExercise(index, 'exerciseName', event.target.value)} required /></label>
+                <label><span className="mobile-field-label">Sets</span><input aria-label={`Exercise ${index + 1} sets`} type="number" min="0" placeholder="3" value={exercise.sets} onChange={(event) => updateExercise(index, 'sets', Number(event.target.value))} /></label>
+                <label><span className="mobile-field-label">Reps</span><input aria-label={`Exercise ${index + 1} reps`} type="number" min="0" placeholder="10" value={exercise.reps} onChange={(event) => updateExercise(index, 'reps', Number(event.target.value))} /></label>
+                <label><span className="mobile-field-label">Weight ({weightUnit})</span><input aria-label={`Exercise ${index + 1} weight in ${weightUnit}`} type="number" min="0" step="0.1" placeholder={unitSystem === 'metric' ? '60' : '135'} value={exercise.weight} onChange={(event) => updateExercise(index, 'weight', Number(event.target.value))} /></label>
+                <label><span className="mobile-field-label">Duration (min)</span><input aria-label={`Exercise ${index + 1} duration in minutes`} type="number" min="0" placeholder="0" value={exercise.duration} onChange={(event) => updateExercise(index, 'duration', Number(event.target.value))} /></label>
                 <button
                   type="button"
                   className="icon-button danger-button"
@@ -378,7 +356,7 @@ export function Workouts() {
                       <strong>{exercise.exerciseName}</strong>
                       <span>
                         {exercise.sets} sets x {exercise.reps} reps
-                        {exercise.weight > 0 ? ` @ ${exercise.weight} lb` : ''}
+                        {exercise.weight > 0 ? ` @ ${poundsToDisplayWeight(exercise.weight, unitSystem)} ${weightUnit}` : ''}
                         {exercise.duration > 0 ? ` - ${exercise.duration} min` : ''}
                       </span>
                     </li>

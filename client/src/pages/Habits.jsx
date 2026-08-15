@@ -2,18 +2,17 @@ import React, { useEffect, useState } from 'react';
 import { Bell, Check, Flame, Target, Trash2 } from 'lucide-react';
 import { api, getErrorMessage } from '../api/client.js';
 import { PageHeader } from '../components/PageHeader.jsx';
-
-function getTodayKey() {
-  return new Date().toISOString().slice(0, 10);
-}
+import { useAuth } from '../state/AuthContext.jsx';
+import { getDateKeyInTimeZone } from '../utils/preferences.js';
 
 export function Habits() {
+  const { user } = useAuth();
   const [habits, setHabits] = useState([]);
   const [form, setForm] = useState({ habitName: '', target: 'Daily', reminderTime: '', notificationsEnabled: false });
   const [isLoading, setIsLoading] = useState(true);
   const [savingId, setSavingId] = useState('');
   const [error, setError] = useState('');
-  const today = getTodayKey();
+  const today = getDateKeyInTimeZone(new Date(), user.timezone || 'UTC');
 
   async function loadHabits() {
     setError('');
@@ -63,6 +62,9 @@ export function Habits() {
   }
 
   async function deleteHabit(id) {
+    const habit = habits.find((item) => item._id === id);
+    if (!window.confirm(`Delete “${habit?.habitName || 'this habit'}” and its check-in history?`)) return;
+
     setError('');
     setSavingId(id);
 
