@@ -1,10 +1,12 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Pencil, Plus, Search, Trash2, X } from 'lucide-react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { api, getErrorMessage } from '../api/client.js';
 import { PageHeader } from '../components/PageHeader.jsx';
 import { useAuth } from '../state/AuthContext.jsx';
 import { filterAndSortWorkouts } from '../utils/workoutFilters.js';
 import { displayWeightToPounds, getDateKeyInTimeZone, getWeightUnit, poundsToDisplayWeight } from '../utils/preferences.js';
+import { createWorkoutDraftFromRoutine } from '../utils/workoutDraft.js';
 
 function newExercise() {
   return { exerciseName: '', sets: 3, reps: 10, weight: 0, duration: 0 };
@@ -63,16 +65,21 @@ function validateWorkout(form) {
 }
 
 export function Workouts() {
+  const location = useLocation();
+  const navigate = useNavigate();
   const { user } = useAuth();
   const unitSystem = user.unitSystem || 'imperial';
   const weightUnit = getWeightUnit(unitSystem);
+  const routineDraft = location.state?.routine;
   const [workouts, setWorkouts] = useState([]);
-  const [form, setForm] = useState(() => initialForm(user.timezone || 'UTC'));
+  const [form, setForm] = useState(() => routineDraft
+    ? createWorkoutDraftFromRoutine(routineDraft, getDateKeyInTimeZone(new Date(), user.timezone || 'UTC'))
+    : initialForm(user.timezone || 'UTC'));
   const [editingId, setEditingId] = useState(null);
   const [visibleCount, setVisibleCount] = useState(10);
   const [filters, setFilters] = useState({ query: '', startDate: '', endDate: '', sort: 'newest' });
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [success, setSuccess] = useState(routineDraft ? 'Routine loaded. Add weight or duration, then save your workout.' : '');
 
   async function loadWorkouts() {
     try {
@@ -86,6 +93,12 @@ export function Workouts() {
   useEffect(() => {
     loadWorkouts();
   }, []);
+
+  useEffect(() => {
+    if (routineDraft) {
+      navigate('/workouts', { replace: true, state: null });
+    }
+  }, [navigate, routineDraft]);
 
   useEffect(() => {
     setVisibleCount(10);

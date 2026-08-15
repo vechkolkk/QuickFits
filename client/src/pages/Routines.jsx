@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { CalendarDays, Pencil, Plus, Trash2, X } from 'lucide-react';
+import { CalendarDays, Dumbbell, Pencil, Plus, Trash2, X } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { api, getErrorMessage } from '../api/client.js';
 import { PageHeader } from '../components/PageHeader.jsx';
 import { validateRoutine } from '../utils/routineValidation.js';
@@ -27,6 +28,7 @@ function normalizeRoutine(form) {
 }
 
 export function Routines() {
+  const navigate = useNavigate();
   const [routines, setRoutines] = useState([]);
   const [form, setForm] = useState(initialForm);
   const [editingId, setEditingId] = useState('');
@@ -94,6 +96,17 @@ export function Routines() {
       }))
     });
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function startWorkout(routine) {
+    navigate('/workouts', {
+      state: {
+        routine: {
+          workoutType: routine.workoutType,
+          exercises: routine.exercises
+        }
+      }
+    });
   }
 
   async function handleSubmit(event) {
@@ -257,6 +270,14 @@ export function Routines() {
                   </li>
                 ))}
               </ul>
+              <button
+                type="button"
+                className="secondary-button routine-start-button"
+                onClick={() => startWorkout(routine)}
+                disabled={isDeleting || isSaving}
+              >
+                <Dumbbell size={17} /> Start workout
+              </button>
             </article>
           );
         })}
