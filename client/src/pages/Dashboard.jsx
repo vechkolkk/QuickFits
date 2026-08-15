@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Activity, AlertCircle, CalendarDays, Droplets, RefreshCw } from 'lucide-react';
+import { Activity, AlertCircle, ArrowRight, CalendarDays, CheckCircle2, Droplets, Dumbbell, RefreshCw } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import {
   Area,
   AreaChart,
@@ -23,6 +24,19 @@ const chartDateFormatter = new Intl.DateTimeFormat(undefined, {
 
 function formatShortDate(date) {
   return chartDateFormatter.format(new Date(`${date}T00:00:00`));
+}
+
+function formatActivityDate(date) {
+  const activityDate = new Date(date);
+  const today = new Date();
+  const yesterday = new Date(today);
+  yesterday.setDate(today.getDate() - 1);
+  const activityKey = activityDate.toISOString().slice(0, 10);
+
+  if (activityKey === today.toISOString().slice(0, 10)) return 'Today';
+  if (activityKey === yesterday.toISOString().slice(0, 10)) return 'Yesterday';
+
+  return activityDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
 function fillRecentDays(series, valueKey, days = 7) {
@@ -246,20 +260,39 @@ export function Dashboard() {
         </div>
       </section>
       <section className="panel">
-        <h2>Recent Workouts</h2>
-        <div className="list">
+        <div className="section-title-row">
+          <div>
+            <h2>Recent Activity</h2>
+            <p>Your latest workouts and habit check-ins.</p>
+          </div>
+        </div>
+        <div className="activity-feed">
           {summary.recentActivity.length === 0 ? (
-            <p className="empty">No workouts logged yet.</p>
+            <div className="activity-empty">
+              <Activity size={28} aria-hidden="true" />
+              <strong>Your activity will show up here</strong>
+              <span>Log a workout or check in a habit to get started.</span>
+              <div>
+                <Link className="secondary-button" to="/workouts">Log a workout</Link>
+                <Link className="secondary-button" to="/habits">View habits</Link>
+              </div>
+            </div>
           ) : (
-            summary.recentActivity.map((workout) => (
-              <article className="row-item" key={workout._id}>
-                <div>
-                  <strong>{workout.workoutName}</strong>
-                  <span>{new Date(workout.date).toLocaleDateString()}</span>
-                </div>
-                <small>{workout.exercises.length} exercises</small>
-              </article>
-            ))
+            summary.recentActivity.map((item) => {
+              const Icon = item.type === 'workout' ? Dumbbell : CheckCircle2;
+
+              return (
+                <Link className={`activity-item ${item.type}`} to={item.href} key={item.id}>
+                  <span className="activity-icon"><Icon size={19} aria-hidden="true" /></span>
+                  <span className="activity-copy">
+                    <strong>{item.title}</strong>
+                    <span>{item.description}</span>
+                  </span>
+                  <time dateTime={item.occurredAt}>{formatActivityDate(item.occurredAt)}</time>
+                  <ArrowRight className="activity-arrow" size={18} aria-hidden="true" />
+                </Link>
+              );
+            })
           )}
         </div>
       </section>
