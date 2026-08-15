@@ -6,7 +6,11 @@ const exerciseSchema = new mongoose.Schema(
     sets: { type: Number, min: 0, default: 0 },
     reps: { type: Number, min: 0, default: 0 },
     weight: { type: Number, min: 0, default: 0 },
-    duration: { type: Number, min: 0, default: 0 }
+    duration: { type: Number, min: 0, default: 0 },
+    setDetails: {
+      type: [{ reps: { type: Number, min: 0, default: 0 }, weight: { type: Number, min: 0, default: 0 }, _id: false }],
+      default: []
+    }
   },
   { _id: false }
 );

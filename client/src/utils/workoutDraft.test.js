@@ -15,8 +15,8 @@ test('creates a workout draft from a routine', () => {
   assert.equal(draft.workoutName, 'Upper body');
   assert.equal(draft.date, '2026-08-15');
   assert.deepEqual(draft.exercises, [
-    { exerciseName: 'Bench press', sets: 3, reps: 10, weight: 0, duration: 0 },
-    { exerciseName: 'Row', sets: 4, reps: 8, weight: 0, duration: 0 }
+    { exerciseName: 'Bench press', duration: 0, setDetails: Array.from({ length: 3 }, () => ({ reps: 10, weight: 0 })) },
+    { exerciseName: 'Row', duration: 0, setDetails: Array.from({ length: 4 }, () => ({ reps: 8, weight: 0 })) }
   ]);
 });
 

@@ -10,7 +10,11 @@ const exerciseSchema = z.object({
   sets: z.coerce.number().min(0).default(0),
   reps: z.coerce.number().min(0).default(0),
   weight: z.coerce.number().min(0).default(0),
-  duration: z.coerce.number().min(0).default(0)
+  duration: z.coerce.number().min(0).default(0),
+  setDetails: z.array(z.object({
+    reps: z.coerce.number().min(0),
+    weight: z.coerce.number().min(0)
+  })).min(1).optional()
 });
 
 const workoutSchema = z.object({
@@ -19,6 +23,21 @@ const workoutSchema = z.object({
   exercises: z.array(exerciseSchema).min(1, 'Add at least one exercise'),
   notes: z.string().optional()
 });
+
+function addExerciseAggregates(payload) {
+  return {
+    ...payload,
+    exercises: payload.exercises.map((exercise) => {
+      if (!exercise.setDetails?.length) return exercise;
+      return {
+        ...exercise,
+        sets: exercise.setDetails.length,
+        reps: Math.max(...exercise.setDetails.map((set) => set.reps)),
+        weight: Math.max(...exercise.setDetails.map((set) => set.weight))
+      };
+    })
+  };
+}
 
 router.use(requireAuth);
 
@@ -33,7 +52,7 @@ router.get('/', async (req, res, next) => {
 
 router.post('/', async (req, res, next) => {
   try {
-    const payload = workoutSchema.parse(req.body);
+    const payload = addExerciseAggregates(workoutSchema.parse(req.body));
     const workout = await Workout.create({ ...payload, userId: req.user._id });
     res.status(201).json({ workout });
   } catch (error) {
@@ -43,7 +62,7 @@ router.post('/', async (req, res, next) => {
 
 router.put('/:id', async (req, res, next) => {
   try {
-    const payload = workoutSchema.parse(req.body);
+    const payload = addExerciseAggregates(workoutSchema.parse(req.body));
     const workout = await Workout.findOneAndUpdate(
       { _id: req.params.id, userId: req.user._id },
       payload,
