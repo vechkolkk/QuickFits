@@ -25,7 +25,9 @@ export function Register() {
       email: form.email.trim().toLowerCase(),
       password: form.password,
       goal: form.goal.trim(),
-      experienceLevel: form.experienceLevel
+      experienceLevel: form.experienceLevel,
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
+      unitSystem: 'imperial'
     };
 
     if (!payload.username || !payload.email || !payload.password || !payload.goal) {

@@ -16,9 +16,10 @@ router.get('/summary', async (req, res, next) => {
       Habit.find({ userId: req.user._id }).lean()
     ]);
 
-    const weekStart = startOfWeek();
-    const weeklyWorkouts = workouts.filter((workout) => new Date(workout.date) >= weekStart);
-    const today = toDateKey();
+    const timezone = req.user.timezone || 'UTC';
+    const weekStart = toDateKey(startOfWeek(new Date(), timezone));
+    const weeklyWorkouts = workouts.filter((workout) => toDateKey(workout.date) >= weekStart);
+    const today = toDateKey(new Date(), timezone);
     const completedToday = habits.filter((habit) => habit.completedDates.includes(today)).length;
     const currentStreak = Math.max(0, ...habits.map((habit) => habit.currentStreak));
     const longestStreak = Math.max(0, ...habits.map((habit) => habit.longestStreak));

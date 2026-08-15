@@ -1,15 +1,18 @@
-export function toDateKey(value = new Date()) {
-  const date = new Date(value);
-  return date.toISOString().slice(0, 10);
+export function toDateKey(value = new Date(), timeZone = 'UTC') {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  }).formatToParts(new Date(value));
+  const values = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+  return `${values.year}-${values.month}-${values.day}`;
 }
 
-export function startOfWeek(value = new Date()) {
-  const date = new Date(value);
-  const day = date.getUTCDay();
-  const diff = date.getUTCDate() - day;
-  date.setUTCDate(diff);
-  date.setUTCHours(0, 0, 0, 0);
-  return date;
+export function startOfWeek(value = new Date(), timeZone = 'UTC') {
+  const localDate = new Date(`${toDateKey(value, timeZone)}T00:00:00.000Z`);
+  localDate.setUTCDate(localDate.getUTCDate() - localDate.getUTCDay());
+  return localDate;
 }
 
 export function daysBetween(a, b) {

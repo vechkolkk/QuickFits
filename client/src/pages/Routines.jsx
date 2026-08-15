@@ -129,6 +129,9 @@ export function Routines() {
   }
 
   async function deleteRoutine(id) {
+    const routine = routines.find((item) => item._id === id);
+    if (!window.confirm(`Delete the ${routine?.day || ''} ${routine?.workoutType || 'routine'}?`.replace('  ', ' '))) return;
+
     setError('');
     setSuccess('');
 

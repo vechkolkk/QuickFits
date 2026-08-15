@@ -1,3 +1,5 @@
+import { toDateKey } from './dates.js';
+
 function toHabitTimestamp(dateKey) {
   return `${dateKey}T12:00:00.000Z`;
 }
@@ -9,6 +11,7 @@ export function buildRecentActivity(workouts, habits, limit = 8) {
     title: workout.workoutName,
     description: `${workout.exercises.length} ${workout.exercises.length === 1 ? 'exercise' : 'exercises'}`,
     occurredAt: new Date(workout.date).toISOString(),
+    occurredDate: toDateKey(workout.date),
     href: '/workouts'
   }));
 
@@ -19,6 +22,7 @@ export function buildRecentActivity(workouts, habits, limit = 8) {
       title: habit.habitName,
       description: 'Habit checked in',
       occurredAt: toHabitTimestamp(date),
+      occurredDate: date,
       href: '/habits'
     }))
   );

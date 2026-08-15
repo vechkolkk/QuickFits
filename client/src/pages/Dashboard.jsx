@@ -16,6 +16,8 @@ import {
 import { api, getErrorMessage } from '../api/client.js';
 import { PageHeader } from '../components/PageHeader.jsx';
 import { StatCard } from '../components/StatCard.jsx';
+import { useAuth } from '../state/AuthContext.jsx';
+import { getDateKeyInTimeZone } from '../utils/preferences.js';
 
 const chartDateFormatter = new Intl.DateTimeFormat(undefined, {
   month: 'short',
@@ -26,26 +28,26 @@ function formatShortDate(date) {
   return chartDateFormatter.format(new Date(`${date}T00:00:00`));
 }
 
-function formatActivityDate(date) {
-  const activityDate = new Date(date);
-  const today = new Date();
-  const yesterday = new Date(today);
-  yesterday.setDate(today.getDate() - 1);
-  const activityKey = activityDate.toISOString().slice(0, 10);
+function formatActivityDate(item, timezone) {
+  const activityDate = new Date(item.occurredAt);
+  const todayKey = getDateKeyInTimeZone(new Date(), timezone);
+  const yesterday = new Date(`${todayKey}T00:00:00.000Z`);
+  yesterday.setUTCDate(yesterday.getUTCDate() - 1);
+  const activityKey = item.occurredDate || getDateKeyInTimeZone(activityDate, timezone);
 
-  if (activityKey === today.toISOString().slice(0, 10)) return 'Today';
+  if (activityKey === todayKey) return 'Today';
   if (activityKey === yesterday.toISOString().slice(0, 10)) return 'Yesterday';
 
-  return activityDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+  return activityDate.toLocaleDateString(undefined, { timeZone: timezone, month: 'short', day: 'numeric', year: 'numeric' });
 }
 
-function fillRecentDays(series, valueKey, days = 7) {
+function fillRecentDays(series, valueKey, timezone, days = 7) {
   const valuesByDate = new Map(series.map((item) => [item.date, item[valueKey]]));
-  const today = new Date();
+  const today = new Date(`${getDateKeyInTimeZone(new Date(), timezone)}T00:00:00.000Z`);
 
   return Array.from({ length: days }, (_, index) => {
     const date = new Date(today);
-    date.setDate(today.getDate() - (days - index - 1));
+    date.setUTCDate(today.getUTCDate() - (days - index - 1));
     const key = date.toISOString().slice(0, 10);
 
     return {
@@ -88,6 +90,8 @@ function EmptyChart({ title, message }) {
 }
 
 export function Dashboard() {
+  const { user } = useAuth();
+  const timezone = user.timezone || 'UTC';
   const [summary, setSummary] = useState(null);
   const [stats, setStats] = useState({ workoutFrequency: [], habitCompletions: [] });
   const [isLoading, setIsLoading] = useState(true);
@@ -129,12 +133,12 @@ export function Dashboard() {
   }, []);
 
   const workoutChartData = useMemo(
-    () => fillRecentDays(stats.workoutFrequency, 'count'),
-    [stats.workoutFrequency]
+    () => fillRecentDays(stats.workoutFrequency, 'count', timezone),
+    [stats.workoutFrequency, timezone]
   );
   const habitChartData = useMemo(
-    () => fillRecentDays(stats.habitCompletions, 'count'),
-    [stats.habitCompletions]
+    () => fillRecentDays(stats.habitCompletions, 'count', timezone),
+    [stats.habitCompletions, timezone]
   );
   const hasWorkoutData = chartHasData(workoutChartData, 'count');
   const hasHabitData = chartHasData(habitChartData, 'count');
@@ -288,7 +292,7 @@ export function Dashboard() {
                     <strong>{item.title}</strong>
                     <span>{item.description}</span>
                   </span>
-                  <time dateTime={item.occurredAt}>{formatActivityDate(item.occurredAt)}</time>
+                  <time dateTime={item.occurredAt}>{formatActivityDate(item, timezone)}</time>
                   <ArrowRight className="activity-arrow" size={18} aria-hidden="true" />
                 </Link>
               );

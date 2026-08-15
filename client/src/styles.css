@@ -572,6 +572,10 @@ main {
   gap: 0;
 }
 
+.exercise-row label {
+  gap: 0;
+}
+
 .routine-exercise-header {
   display: grid;
   grid-template-columns: minmax(180px, 2fr) minmax(80px, 0.65fr) minmax(80px, 0.65fr) 48px;

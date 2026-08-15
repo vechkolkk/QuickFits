@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BadgeCheck, Mail, Target, UserCircle } from 'lucide-react';
+import { BadgeCheck, Globe2, Mail, Ruler, Target, UserCircle } from 'lucide-react';
 import { getErrorMessage } from '../api/client.js';
 import { PageHeader } from '../components/PageHeader.jsx';
 import { useAuth } from '../state/AuthContext.jsx';
@@ -9,16 +9,21 @@ export function Profile() {
   const [form, setForm] = useState({
     username: user.username || '',
     goal: user.goal || '',
-    experienceLevel: user.experienceLevel || 'Beginner'
+    experienceLevel: user.experienceLevel || 'Beginner',
+    timezone: user.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
+    unitSystem: user.unitSystem || 'imperial'
   });
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const timezones = Intl.supportedValuesOf?.('timeZone') || ['UTC'];
 
   const hasChanges =
     form.username.trim() !== user.username ||
     form.goal.trim() !== (user.goal || '') ||
-    form.experienceLevel !== user.experienceLevel;
+    form.experienceLevel !== user.experienceLevel ||
+    form.timezone !== (user.timezone || 'UTC') ||
+    form.unitSystem !== (user.unitSystem || 'imperial');
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -28,7 +33,9 @@ export function Profile() {
     const payload = {
       username: form.username.trim(),
       goal: form.goal.trim(),
-      experienceLevel: form.experienceLevel
+      experienceLevel: form.experienceLevel,
+      timezone: form.timezone,
+      unitSystem: form.unitSystem
     };
 
     if (payload.username.length < 2) {
@@ -92,6 +99,22 @@ export function Profile() {
                 required
               />
             </label>
+            <label>
+              Weight units
+              <select value={form.unitSystem} onChange={(event) => setForm({ ...form, unitSystem: event.target.value })}>
+                <option value="imperial">Pounds (lb)</option>
+                <option value="metric">Kilograms (kg)</option>
+              </select>
+            </label>
+            <label>
+              Timezone
+              <select value={form.timezone} onChange={(event) => setForm({ ...form, timezone: event.target.value })}>
+                {!timezones.includes(form.timezone) && <option>{form.timezone}</option>}
+                {timezones.map((timezone) => (
+                  <option value={timezone} key={timezone}>{timezone.replaceAll('_', ' ')}</option>
+                ))}
+              </select>
+            </label>
             <div className="profile-actions full">
               <button type="submit" disabled={isSaving || !hasChanges}>
                 {isSaving ? 'Saving...' : 'Save changes'}
@@ -122,6 +145,14 @@ export function Profile() {
             <div>
               <dt><BadgeCheck size={16} /> Experience</dt>
               <dd>{user.experienceLevel}</dd>
+            </div>
+            <div>
+              <dt><Ruler size={16} /> Units</dt>
+              <dd>{user.unitSystem === 'metric' ? 'Kilograms' : 'Pounds'}</dd>
+            </div>
+            <div>
+              <dt><Globe2 size={16} /> Timezone</dt>
+              <dd>{user.timezone || 'UTC'}</dd>
             </div>
           </dl>
         </aside>
