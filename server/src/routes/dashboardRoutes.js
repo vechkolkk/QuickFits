@@ -4,6 +4,7 @@ import { Habit } from '../models/Habit.js';
 import { Workout } from '../models/Workout.js';
 import { startOfWeek, toDateKey } from '../utils/dates.js';
 import { buildRecentActivity } from '../utils/activity.js';
+import { calculateProgressMetrics } from '../utils/progress.js';
 
 const router = express.Router();
 
@@ -75,6 +76,15 @@ router.get('/stats', async (req, res, next) => {
         habitCompletions: Object.entries(habitCompletions).map(([date, count]) => ({ date, count }))
       }
     });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.get('/progress', async (req, res, next) => {
+  try {
+    const workouts = await Workout.find({ userId: req.user._id }).sort({ date: 1 }).lean();
+    res.json({ progress: calculateProgressMetrics(workouts) });
   } catch (error) {
     next(error);
   }

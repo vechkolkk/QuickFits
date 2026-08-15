@@ -408,6 +408,47 @@ main {
   font-size: 0.82rem;
 }
 
+.progress-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.65rem;
+  margin-bottom: 1rem;
+}
+
+.progress-summary-grid article {
+  display: grid;
+  gap: 0.25rem;
+  border-radius: 8px;
+  background: #f7faf6;
+  padding: 0.8rem;
+}
+
+.progress-summary-grid svg { color: #0e7490; }
+.progress-summary-grid strong { font-size: 1.3rem; }
+.progress-summary-grid span { color: #647066; font-size: 0.82rem; }
+
+.progress-layout {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.8fr) minmax(0, 1.2fr);
+  gap: 1rem;
+}
+
+.personal-record-list { display: grid; gap: 0.5rem; }
+
+.personal-record-list article {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.15rem 0.75rem;
+  border: 1px solid #edf0e9;
+  border-radius: 8px;
+  padding: 0.65rem;
+}
+
+.personal-record-list article > div { display: grid; }
+.personal-record-list span { color: #647066; font-size: 0.78rem; }
+.personal-record-list article > span { grid-column: 2; }
+.progress-empty { min-height: 220px; }
+
 .chart-frame {
   height: 280px;
 }
@@ -1191,6 +1232,8 @@ main {
     grid-template-columns: 1fr;
   }
 
+  .progress-layout { grid-template-columns: 1fr; }
+
   .profile-layout {
     grid-template-columns: 1fr;
   }
@@ -1223,6 +1266,7 @@ main {
 
   .grid-form,
   .stat-grid,
+  .progress-summary-grid,
   .habit-grid,
   .routine-grid,
   .exercise-header,
