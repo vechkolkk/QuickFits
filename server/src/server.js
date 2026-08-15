@@ -1,6 +1,9 @@
 import 'dotenv/config';
 import { createApp } from './app.js';
 import { connectDb } from './config/db.js';
+import dns from "node:dns";
+
+dns.setServers(["8.8.8.8", "1.1.1.1"]);
 
 const port = process.env.PORT || 5000;
 
