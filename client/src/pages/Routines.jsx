@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
-import { api } from '../api/client.js';
+import { api, getErrorMessage } from '../api/client.js';
 import { PageHeader } from '../components/PageHeader.jsx';
 
 const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
@@ -9,10 +9,15 @@ const blankExercise = { exerciseName: '', sets: 3, reps: 10 };
 export function Routines() {
   const [routines, setRoutines] = useState([]);
   const [form, setForm] = useState({ day: 'Monday', workoutType: '', exercises: [blankExercise] });
+  const [error, setError] = useState('');
 
   async function loadRoutines() {
-    const { data } = await api.get('/routines');
-    setRoutines(data.routines);
+    try {
+      const { data } = await api.get('/routines');
+      setRoutines(data.routines);
+    } catch (err) {
+      setError(getErrorMessage(err));
+    }
   }
 
   useEffect(() => {
@@ -30,14 +35,26 @@ export function Routines() {
 
   async function handleSubmit(event) {
     event.preventDefault();
-    await api.post('/routines', form);
-    setForm({ day: 'Monday', workoutType: '', exercises: [blankExercise] });
-    loadRoutines();
+    setError('');
+
+    try {
+      await api.post('/routines', form);
+      setForm({ day: 'Monday', workoutType: '', exercises: [blankExercise] });
+      await loadRoutines();
+    } catch (err) {
+      setError(getErrorMessage(err));
+    }
   }
 
   async function deleteRoutine(id) {
-    await api.delete(`/routines/${id}`);
-    loadRoutines();
+    setError('');
+
+    try {
+      await api.delete(`/routines/${id}`);
+      await loadRoutines();
+    } catch (err) {
+      setError(getErrorMessage(err));
+    }
   }
 
   return (
@@ -68,6 +85,7 @@ export function Routines() {
               <Plus size={16} /> Add exercise
             </button>
           </div>
+          {error && <p className="error full" role="alert">{error}</p>}
           <button type="submit">Save routine</button>
         </form>
       </section>
