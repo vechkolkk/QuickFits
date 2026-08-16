@@ -7,6 +7,7 @@ import authRoutes from './routes/authRoutes.js';
 import dashboardRoutes from './routes/dashboardRoutes.js';
 import habitRoutes from './routes/habitRoutes.js';
 import measurementRoutes from './routes/measurementRoutes.js';
+import nutritionRoutes from './routes/nutritionRoutes.js';
 import routineRoutes from './routes/routineRoutes.js';
 import workoutRoutes from './routes/workoutRoutes.js';
 import { errorHandler, notFound } from './middleware/errorHandler.js';
@@ -67,6 +68,7 @@ export function createApp() {
   app.use('/api/workouts', workoutRoutes);
   app.use('/api/habits', habitRoutes);
   app.use('/api/measurements', measurementRoutes);
+  app.use('/api/nutrition', nutritionRoutes);
   app.use('/api/routines', routineRoutes);
   app.use('/api/dashboard', dashboardRoutes);
 
