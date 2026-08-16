@@ -11,24 +11,29 @@ const habitSchema = z.object({
   habitName: z.string().min(1, 'Habit name is required'),
   target: z.string().optional(),
   reminderTime: z.string().optional(),
+  reminderTimes: z.array(z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'Reminder time must use HH:MM')).max(5).optional(),
+  scheduleDays: z.array(z.number().int().min(0).max(6)).min(1, 'Choose at least one scheduled day').optional(),
   notificationsEnabled: z.boolean().optional()
 });
 
 function serializeHabit(habit) {
   const habitObject = typeof habit.toObject === 'function' ? habit.toObject() : habit;
-  const streaks = calculateHabitStreaks(habitObject.completedDates);
+  const scheduleDays = habitObject.scheduleDays?.length ? habitObject.scheduleDays : [0, 1, 2, 3, 4, 5, 6];
+  const streaks = calculateHabitStreaks(habitObject.completedDates, new Date(), scheduleDays);
 
   return {
     ...habitObject,
+    scheduleDays: [...new Set(scheduleDays)].sort(),
+    reminderTimes: habitObject.reminderTimes?.length ? habitObject.reminderTimes : habitObject.reminderTime ? [habitObject.reminderTime] : [],
     completedDates: streaks.completedDates,
     currentStreak: streaks.currentStreak,
     longestStreak: streaks.longestStreak,
-    weekSummary: getHabitWeekSummary(streaks.completedDates)
+    weekSummary: getHabitWeekSummary(streaks.completedDates, new Date(), scheduleDays)
   };
 }
 
 async function refreshStreaksIfNeeded(habit) {
-  const streaks = calculateHabitStreaks(habit.completedDates);
+  const streaks = calculateHabitStreaks(habit.completedDates, new Date(), habit.scheduleDays);
   const needsUpdate =
     habit.currentStreak !== streaks.currentStreak ||
     habit.longestStreak !== streaks.longestStreak ||
@@ -98,7 +103,7 @@ router.post('/:id/checkin', async (req, res, next) => {
       ? habit.completedDates.filter((date) => date !== dateKey)
       : [...habit.completedDates, dateKey];
 
-    const streaks = calculateHabitStreaks(habit.completedDates);
+    const streaks = calculateHabitStreaks(habit.completedDates, new Date(), habit.scheduleDays);
     habit.completedDates = streaks.completedDates;
     habit.currentStreak = streaks.currentStreak;
     habit.longestStreak = streaks.longestStreak;

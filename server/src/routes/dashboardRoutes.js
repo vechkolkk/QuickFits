@@ -21,7 +21,9 @@ router.get('/summary', async (req, res, next) => {
     const weekStart = toDateKey(startOfWeek(new Date(), timezone));
     const weeklyWorkouts = workouts.filter((workout) => toDateKey(workout.date) >= weekStart);
     const today = toDateKey(new Date(), timezone);
-    const completedToday = habits.filter((habit) => habit.completedDates.includes(today)).length;
+    const todayIndex = new Date(`${today}T00:00:00.000Z`).getUTCDay();
+    const scheduledHabits = habits.filter((habit) => !habit.scheduleDays?.length || habit.scheduleDays.includes(todayIndex));
+    const completedToday = scheduledHabits.filter((habit) => habit.completedDates.includes(today)).length;
     const currentStreak = Math.max(0, ...habits.map((habit) => habit.currentStreak));
     const longestStreak = Math.max(0, ...habits.map((habit) => habit.longestStreak));
 
@@ -40,7 +42,7 @@ router.get('/summary', async (req, res, next) => {
         currentStreak,
         longestStreak,
         completedToday,
-        totalHabits: habits.length,
+        totalHabits: scheduledHabits.length,
         mostActiveWeek: mostActiveWeek ? { week: mostActiveWeek[0], count: mostActiveWeek[1] } : null,
         recentActivity: buildRecentActivity(workouts, habits)
       }
