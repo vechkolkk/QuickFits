@@ -1205,6 +1205,69 @@ main {
 .measurement-list article > div:first-child { display: grid; gap: 0.2rem; }
 .measurement-list span { color: #647066; }
 
+.nutrition-date-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+  text-align: center;
+}
+
+.nutrition-date-row > div {
+  min-width: min(320px, 60vw);
+  display: grid;
+  gap: 0.2rem;
+}
+
+.nutrition-date-row span,
+.nutrition-entry-list span,
+.nutrition-entry-list small { color: #647066; }
+
+.nutrition-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.nutrition-progress {
+  height: 7px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e8ede5;
+}
+
+.nutrition-progress span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #16a34a;
+}
+
+.nutrition-entry-list { display: grid; gap: 0.65rem; }
+
+.nutrition-entry-list article {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 1rem;
+  border: 1px solid #edf0e9;
+  border-radius: 8px;
+  padding: 0.8rem;
+}
+
+.nutrition-entry-list article > div:first-child { display: grid; gap: 0.2rem; }
+.nutrition-entry-list article > div:last-child { display: flex; gap: 0.4rem; }
+
+.nutrition-goals {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(110px, 1fr)) auto;
+  align-items: end;
+  gap: 0.75rem;
+}
+
+.nutrition-goals .success { grid-column: 1 / -1; }
+
 @media (max-width: 860px) {
   .auth-layout {
     grid-template-columns: minmax(0, 460px);
@@ -1227,7 +1290,7 @@ main {
   }
 
   nav {
-    grid-template-columns: repeat(6, minmax(0, 1fr));
+    grid-template-columns: repeat(7, minmax(0, 1fr));
     overflow-x: auto;
   }
 
@@ -1237,6 +1300,7 @@ main {
   }
 
   .stat-grid,
+  .nutrition-summary-grid,
   .habit-grid,
   .routine-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1259,6 +1323,9 @@ main {
   .day-picker > div {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
+
+  .nutrition-goals { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .nutrition-goals button { grid-column: 1 / -1; }
 }
 
 @media (max-width: 620px) {
@@ -1280,6 +1347,7 @@ main {
 
   .grid-form,
   .stat-grid,
+  .nutrition-summary-grid,
   .progress-summary-grid,
   .habit-grid,
   .routine-grid,
@@ -1288,6 +1356,12 @@ main {
   .routine-row {
     grid-template-columns: 1fr;
   }
+
+  .nutrition-entry-list article { grid-template-columns: minmax(0, 1fr) auto; }
+  .nutrition-entry-list article > div:last-child { grid-column: 1 / -1; }
+  .nutrition-entry-list article > div:last-child button { flex: 1; }
+  .nutrition-goals { grid-template-columns: 1fr; }
+  .nutrition-goals button { grid-column: auto; }
 
   .exercise-header,
   .routine-exercise-header {

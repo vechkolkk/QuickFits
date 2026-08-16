@@ -15,6 +15,10 @@ const timezoneSchema = z.string().refine((timezone) => {
     return false;
   }
 }, 'Timezone must be valid');
+const nutritionGoalsSchema = z.object({
+  calories: z.coerce.number().min(0), protein: z.coerce.number().min(0),
+  carbs: z.coerce.number().min(0), fat: z.coerce.number().min(0)
+});
 
 const registerSchema = z.object({
   username: z.string().min(2, 'Username must be at least 2 characters'),
@@ -36,7 +40,8 @@ const profileSchema = z.object({
   goal: z.string().optional(),
   experienceLevel: z.enum(['Beginner', 'Casual', 'Intermediate']).optional(),
   timezone: timezoneSchema.optional(),
-  unitSystem: z.enum(['imperial', 'metric']).optional()
+  unitSystem: z.enum(['imperial', 'metric']).optional(),
+  nutritionGoals: nutritionGoalsSchema.optional()
 });
 
 function serializeUser(user) {
@@ -47,7 +52,8 @@ function serializeUser(user) {
     goal: user.goal,
     experienceLevel: user.experienceLevel,
     timezone: user.timezone,
-    unitSystem: user.unitSystem
+    unitSystem: user.unitSystem,
+    nutritionGoals: user.nutritionGoals
   };
 }
 
