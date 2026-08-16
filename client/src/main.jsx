@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import { BrowserRouter, Navigate, NavLink, Route, Routes } from 'react-router-dom';
 import { Activity, Dumbbell, Home, ListChecks, Repeat, Salad, Scale, Settings } from 'lucide-react';
 import { AuthProvider, useAuth } from './state/AuthContext.jsx';
+import { HabitReminderScheduler } from './components/HabitReminderScheduler.jsx';
 import { Dashboard } from './pages/Dashboard.jsx';
 import { Login } from './pages/Login.jsx';
 import { Register } from './pages/Register.jsx';
@@ -43,6 +44,7 @@ function AppShell() {
 
   return (
     <div className="app-shell">
+      <HabitReminderScheduler />
       <aside className="sidebar">
         <div className="brand">
           <Activity size={28} />

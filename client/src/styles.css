@@ -916,6 +916,64 @@ main {
   align-items: center;
 }
 
+.habit-top > div { display: flex; gap: 0.4rem; }
+.habit-form > label:first-child { max-width: 520px; }
+
+.habit-schedule,
+.habit-reminders {
+  display: grid;
+  gap: 0.65rem;
+  min-width: 0;
+  margin: 0;
+  border: 1px solid #dfe5d8;
+  border-radius: 8px;
+  padding: 0.8rem;
+}
+
+.habit-schedule legend,
+.habit-reminders legend {
+  padding: 0 0.35rem;
+  color: #3f4f44;
+  font-size: 0.88rem;
+  font-weight: 800;
+}
+
+.habit-schedule > div {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.45rem;
+}
+
+.habit-schedule button { background: #edf4eb; color: #405146; }
+.habit-schedule button.selected { background: #166534; color: #fff; }
+
+.habit-reminders > div {
+  display: grid;
+  grid-template-columns: minmax(150px, 260px) 44px;
+  gap: 0.5rem;
+}
+
+.habit-reminders > .secondary-button { width: fit-content; }
+
+.reminder-permission {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  border-radius: 8px;
+  padding: 0.75rem;
+  background: #f0f7f8;
+  color: #405146;
+}
+
+.habit-schedule-label {
+  display: block;
+  margin: -0.55rem 0 0.65rem;
+  color: #0e7490;
+  font-size: 0.82rem;
+  font-weight: 750;
+}
+
 .check-button {
   width: 44px;
   background: #edf4eb;
@@ -968,8 +1026,10 @@ main {
 .habit-week-days span {
   height: 10px;
   border-radius: 999px;
-  background: #e4e9df;
+  background: #f0f2ed;
 }
+
+.habit-week-days span.scheduled { background: #cfd8ca; }
 
 .habit-week-days span.complete {
   background: #166534;
@@ -1399,6 +1459,9 @@ main {
   .day-picker > div {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .habit-schedule > div { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .reminder-permission { align-items: stretch; flex-direction: column; }
 
   .day-button {
     display: flex;
