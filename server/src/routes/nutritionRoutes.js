@@ -11,7 +11,10 @@ const schema = z.object({
   calories: z.coerce.number().min(0),
   protein: z.coerce.number().min(0).default(0),
   carbs: z.coerce.number().min(0).default(0),
-  fat: z.coerce.number().min(0).default(0)
+  fat: z.coerce.number().min(0).default(0),
+  barcode: z.string().regex(/^\d{8,14}$/).or(z.literal('')).optional(),
+  source: z.enum(['manual', 'open-food-facts']).optional(),
+  servingGrams: z.coerce.number().min(0).optional()
 });
 
 router.use(requireAuth);

@@ -10,3 +10,11 @@ export function calculateNutritionTotals(entries) {
 export function nutritionProgress(value, goal) {
   return goal > 0 ? Math.min(100, Math.round((value / goal) * 100)) : 0;
 }
+
+export function scaleFoodNutrition(food, grams) {
+  const factor = Math.max(0, Number(grams) || 0) / 100;
+  return ['calories', 'protein', 'carbs', 'fat'].reduce((values, key) => ({
+    ...values,
+    [key]: Math.round(Number(food[key] || 0) * factor * 10) / 10
+  }), {});
+}

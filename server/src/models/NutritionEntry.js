@@ -8,7 +8,10 @@ const nutritionEntrySchema = new mongoose.Schema({
   calories: { type: Number, min: 0, required: true },
   protein: { type: Number, min: 0, default: 0 },
   carbs: { type: Number, min: 0, default: 0 },
-  fat: { type: Number, min: 0, default: 0 }
+  fat: { type: Number, min: 0, default: 0 },
+  barcode: { type: String, default: '' },
+  source: { type: String, enum: ['', 'manual', 'open-food-facts'], default: 'manual' },
+  servingGrams: { type: Number, min: 0, default: 0 }
 }, { timestamps: true });
 
 nutritionEntrySchema.index({ userId: 1, date: -1 });

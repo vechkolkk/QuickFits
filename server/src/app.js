@@ -5,6 +5,7 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import authRoutes from './routes/authRoutes.js';
 import dashboardRoutes from './routes/dashboardRoutes.js';
+import foodRoutes from './routes/foodRoutes.js';
 import habitRoutes from './routes/habitRoutes.js';
 import measurementRoutes from './routes/measurementRoutes.js';
 import nutritionRoutes from './routes/nutritionRoutes.js';
@@ -69,6 +70,7 @@ export function createApp() {
   app.use('/api/habits', habitRoutes);
   app.use('/api/measurements', measurementRoutes);
   app.use('/api/nutrition', nutritionRoutes);
+  app.use('/api/foods', foodRoutes);
   app.use('/api/routines', routineRoutes);
   app.use('/api/dashboard', dashboardRoutes);
 

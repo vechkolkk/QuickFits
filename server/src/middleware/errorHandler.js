@@ -40,7 +40,7 @@ export function errorHandler(error, req, res, _next) {
   const isServerError = status >= 500;
 
   return res.status(status).json({
-    message: isServerError
+    message: isServerError && !error.expose
       ? 'Something went wrong on our end. Please try again.'
       : error.message || 'The request could not be completed.'
   });

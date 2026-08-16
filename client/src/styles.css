@@ -1328,6 +1328,75 @@ main {
 
 .nutrition-goals .success { grid-column: 1 / -1; }
 
+.food-lookup { display: grid; gap: 1rem; }
+.food-lookup .section-title-row { margin-bottom: 0; }
+.food-lookup .section-title-row a { font-size: 0.78rem; white-space: nowrap; }
+
+.food-lookup-tools {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.food-lookup-tools label > div { display: flex; gap: 0.45rem; }
+.food-lookup-tools label > div button { flex: 0 0 auto; padding: 0 0.8rem; }
+
+.food-results {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+.food-results > button {
+  display: grid;
+  grid-template-columns: 54px minmax(0, 1fr);
+  align-items: center;
+  gap: 0.65rem;
+  min-width: 0;
+  border: 1px solid #dfe5d8;
+  padding: 0.55rem;
+  background: #fff;
+  color: #17201a;
+  text-align: left;
+}
+
+.food-results > button:hover,
+.food-results > button.selected { border-color: #166534; background: #edf4eb; }
+.food-results img,
+.food-image-placeholder { width: 54px; height: 54px; border-radius: 6px; object-fit: contain; background: #f2f5ef; }
+.food-image-placeholder { display: grid; place-items: center; color: #647066; }
+.food-results > button > span:last-child { min-width: 0; display: grid; gap: 0.2rem; }
+.food-results strong,
+.food-results small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.food-results small { color: #647066; }
+
+.food-portion {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 140px auto;
+  align-items: end;
+  gap: 0.75rem;
+  border-radius: 8px;
+  padding: 0.8rem;
+  background: #f7faf6;
+}
+
+.food-portion > div { align-self: center; display: grid; gap: 0.2rem; }
+.food-portion > div span { color: #647066; }
+
+.barcode-camera {
+  position: relative;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  min-height: 220px;
+  border-radius: 8px;
+  background: #17201a;
+}
+
+.barcode-camera video { width: 100%; max-height: 360px; object-fit: cover; }
+.barcode-camera .icon-button { position: absolute; top: 0.75rem; right: 0.75rem; }
+.barcode-camera span { position: absolute; bottom: 0.75rem; border-radius: 999px; padding: 0.4rem 0.75rem; background: rgba(23, 32, 26, 0.8); color: #fff; font-weight: 700; }
+
 @media (max-width: 860px) {
   .auth-layout {
     grid-template-columns: minmax(0, 460px);
@@ -1386,6 +1455,7 @@ main {
 
   .nutrition-goals { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .nutrition-goals button { grid-column: 1 / -1; }
+  .food-results { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 @media (max-width: 620px) {
@@ -1422,6 +1492,11 @@ main {
   .nutrition-entry-list article > div:last-child button { flex: 1; }
   .nutrition-goals { grid-template-columns: 1fr; }
   .nutrition-goals button { grid-column: auto; }
+  .food-lookup-tools,
+  .food-results,
+  .food-portion { grid-template-columns: 1fr; }
+  .food-lookup-tools label > div { flex-wrap: wrap; }
+  .food-lookup-tools label > div input { flex: 1 1 180px; }
 
   .exercise-header,
   .routine-exercise-header {
