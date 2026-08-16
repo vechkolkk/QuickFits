@@ -1,4 +1,5 @@
 const POUNDS_PER_KILOGRAM = 2.2046226218;
+const CENTIMETERS_PER_INCH = 2.54;
 
 export function getDateKeyInTimeZone(value = new Date(), timeZone = 'UTC') {
   const parts = new Intl.DateTimeFormat('en-CA', {
@@ -23,4 +24,18 @@ export function displayWeightToPounds(weight, unitSystem) {
 
 export function getWeightUnit(unitSystem) {
   return unitSystem === 'metric' ? 'kg' : 'lb';
+}
+
+export function inchesToDisplayLength(inches, unitSystem) {
+  if (unitSystem !== 'metric') return Number(inches);
+  return Math.round(Number(inches) * CENTIMETERS_PER_INCH * 10) / 10;
+}
+
+export function displayLengthToInches(length, unitSystem) {
+  if (unitSystem !== 'metric') return Number(length);
+  return Math.round((Number(length) / CENTIMETERS_PER_INCH) * 10) / 10;
+}
+
+export function getLengthUnit(unitSystem) {
+  return unitSystem === 'metric' ? 'cm' : 'in';
 }

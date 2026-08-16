@@ -1191,6 +1191,20 @@ main {
   color: #647066;
 }
 
+.measurement-list { display: grid; gap: 0.65rem; }
+.measurement-list article {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  border: 1px solid #edf0e9;
+  border-radius: 8px;
+  padding: 0.75rem;
+}
+.measurement-list article > div { display: flex; align-items: center; gap: 0.5rem; }
+.measurement-list article > div:first-child { display: grid; gap: 0.2rem; }
+.measurement-list span { color: #647066; }
+
 @media (max-width: 860px) {
   .auth-layout {
     grid-template-columns: minmax(0, 460px);
@@ -1213,7 +1227,7 @@ main {
   }
 
   nav {
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-template-columns: repeat(6, minmax(0, 1fr));
     overflow-x: auto;
   }
 
