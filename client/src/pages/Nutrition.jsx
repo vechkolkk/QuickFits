@@ -2,11 +2,12 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { ChevronLeft, ChevronRight, Pencil, Salad, Trash2, X } from 'lucide-react';
 import { api, getErrorMessage } from '../api/client.js';
 import { PageHeader } from '../components/PageHeader.jsx';
+import { FoodLookup } from '../components/FoodLookup.jsx';
 import { useAuth } from '../state/AuthContext.jsx';
 import { calculateNutritionTotals, nutritionProgress } from '../utils/nutrition.js';
 import { getDateKeyInTimeZone } from '../utils/preferences.js';
 
-const blankEntry = (date) => ({ date, name: '', mealType: 'Breakfast', calories: '', protein: '', carbs: '', fat: '' });
+const blankEntry = (date) => ({ date, name: '', mealType: 'Breakfast', calories: '', protein: '', carbs: '', fat: '', barcode: '', source: 'manual', servingGrams: 0 });
 
 export function Nutrition() {
   const { user, updateProfile } = useAuth();
@@ -41,6 +42,11 @@ export function Nutrition() {
     finally { setIsSaving(false); }
   }
 
+  function useFood(food) {
+    setEditingId('');
+    setForm({ ...blankEntry(date), name: food.name, calories: food.calories, protein: food.protein, carbs: food.carbs, fat: food.fat, barcode: food.barcode, source: food.source, servingGrams: food.servingGrams });
+  }
+
   function edit(entry) { setEditingId(entry._id); setForm({ ...entry, date, calories: entry.calories, protein: entry.protein, carbs: entry.carbs, fat: entry.fat }); }
   async function remove(entry) {
     if (!window.confirm(`Delete “${entry.name}”?`)) return;
@@ -63,8 +69,9 @@ export function Nutrition() {
     <PageHeader title="Nutrition" eyebrow="Daily fuel" />
     <section className="panel nutrition-date-row"><button className="icon-button" onClick={() => changeDate(-1)} aria-label="Previous day"><ChevronLeft /></button><div><strong>{new Date(`${date}T00:00:00`).toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}</strong><span>{date}</span></div><button className="icon-button" onClick={() => changeDate(1)} aria-label="Next day"><ChevronRight /></button></section>
     <section className="nutrition-summary-grid">{['calories', 'protein', 'carbs', 'fat'].map((key) => <article className="stat-card" key={key}><span>{key[0].toUpperCase() + key.slice(1)}</span><strong>{totals[key]}{key !== 'calories' ? 'g' : ''}</strong><small>of {goals[key]}{key !== 'calories' ? 'g' : ''}</small><div className="nutrition-progress"><span style={{ width: `${nutritionProgress(totals[key], goals[key])}%` }} /></div></article>)}</section>
+    <FoodLookup onUseFood={useFood} />
     <section className="panel"><div className="section-title-row"><h2>{editingId ? 'Edit food' : 'Add food'}</h2>{editingId && <button className="secondary-button" onClick={() => { setEditingId(''); setForm(blankEntry(date)); }}><X size={16} /> Cancel</button>}</div><form className="grid-form" onSubmit={submit}><label>Food or meal<input value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} required /></label><label>Meal<select value={form.mealType} onChange={(event) => setForm({ ...form, mealType: event.target.value })}>{['Breakfast', 'Lunch', 'Dinner', 'Snack'].map((meal) => <option key={meal}>{meal}</option>)}</select></label>{['calories', 'protein', 'carbs', 'fat'].map((key) => <label key={key}>{key[0].toUpperCase() + key.slice(1)}{key !== 'calories' ? ' (g)' : ''}<input type="number" min="0" step="0.1" value={form[key]} onChange={(event) => setForm({ ...form, [key]: event.target.value })} required={key === 'calories'} /></label>)}{error && <p className="error full">{error}</p>}<button disabled={isSaving}>{isSaving ? 'Saving...' : editingId ? 'Update food' : 'Add food'}</button></form></section>
-    <section className="panel"><h2>Daily entries</h2><div className="nutrition-entry-list">{entries.length ? entries.map((entry) => <article key={entry._id}><div><span>{entry.mealType}</span><strong>{entry.name}</strong><small>{entry.protein}g protein · {entry.carbs}g carbs · {entry.fat}g fat</small></div><strong>{entry.calories} cal</strong><div><button className="icon-button" onClick={() => edit(entry)} disabled={deletingId === entry._id} aria-label={`Edit ${entry.name}`}><Pencil size={17} /></button><button className="icon-button danger-button" onClick={() => remove(entry)} disabled={deletingId === entry._id} aria-label={`Delete ${entry.name}`}><Trash2 size={17} /></button></div></article>) : <div className="chart-empty"><Salad size={28} /><strong>No food logged</strong><span>Add your first meal for this day.</span></div>}</div></section>
+    <section className="panel"><h2>Daily entries</h2><div className="nutrition-entry-list">{entries.length ? entries.map((entry) => <article key={entry._id}><div><span>{entry.mealType}{entry.servingGrams ? ` · ${entry.servingGrams}g` : ''}</span><strong>{entry.name}</strong><small>{entry.protein}g protein · {entry.carbs}g carbs · {entry.fat}g fat{entry.barcode ? ` · Barcode ${entry.barcode}` : ''}</small></div><strong>{entry.calories} cal</strong><div><button className="icon-button" onClick={() => edit(entry)} disabled={deletingId === entry._id} aria-label={`Edit ${entry.name}`}><Pencil size={17} /></button><button className="icon-button danger-button" onClick={() => remove(entry)} disabled={deletingId === entry._id} aria-label={`Delete ${entry.name}`}><Trash2 size={17} /></button></div></article>) : <div className="chart-empty"><Salad size={28} /><strong>No food logged</strong><span>Add your first meal for this day.</span></div>}</div></section>
     <section className="panel"><h2>Daily targets</h2><div className="nutrition-goals">{Object.keys(goals).map((key) => <label key={key}>{key[0].toUpperCase() + key.slice(1)}<input type="number" min="0" value={goals[key]} onChange={(event) => setGoals({ ...goals, [key]: event.target.value })} /></label>)}<button onClick={saveGoals} disabled={goalsStatus === 'Saving...'}>Save targets</button>{goalsStatus && <span className="success" role="status">{goalsStatus}</span>}</div></section>
   </>;
 }
